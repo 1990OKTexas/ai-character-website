@@ -17,10 +17,9 @@
         border-radius: 12px;
         box-shadow: 0 0 6px rgba(0,0,0,0.1);
       }
-      .home-btn {
+      .home-btn, .reset-btn {
         position: fixed;
         top: 10px;
-        left: 10px;
         background-color: #6c757d;
         color: white;
         border: none;
@@ -30,6 +29,8 @@
         font-size: 13px;
         z-index: 1001;
       }
+      .home-btn { left: 10px; }
+      .reset-btn { right: 10px; background-color: #dc3545; }
       .character-img {
         display: block;
         margin: 0 auto 10px;
@@ -86,6 +87,7 @@
   <body>
 
     <button class="home-btn" onclick="location.href='index.html'">Go Home</button>
+    <button class="reset-btn" onclick="resetConversation()">Start Over</button>
 
     <div class="container">
       <img id="charImg" class="character-img" src="" alt="Character Image" />
@@ -105,10 +107,26 @@
     </div>
 
     <script>
-      const urlParams = new URLSearchParams(window.location.search);
-      const charName = urlParams.get('name');
+      const params = new URLSearchParams(window.location.search);
+      const charName = params.get('name');
       const characters = JSON.parse(localStorage.getItem("characters") || "[]");
       const character = characters.find(c => c.name === charName);
+      const user = JSON.parse(localStorage.getItem("loggedInUser"));
+
+      const chatbox = document.getElementById("chatbox");
+      const messageInput = document.getElementById("messageInput");
+      const sendBtn = document.getElementById("sendBtn");
+
+      const historyKey = `chat_history_${user?.username}_${charName}`;
+      let chatHistory = [];
+
+      if (!user) {
+        document.getElementById("lockNotice").style.display = "block";
+      } else {
+        messageInput.disabled = false;
+        sendBtn.disabled = false;
+        loadChatHistory();
+      }
 
       if (character) {
         document.getElementById("charImg").src = character.image;
@@ -116,47 +134,75 @@
         document.getElementById("charDesc").textContent = character.description;
       }
 
-      let chatHistory = [];
-      let loggedUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+      function loadChatHistory() {
+        const saved = JSON.parse(localStorage.getItem(historyKey) || "[]");
+        chatHistory = saved;
 
-      if (!loggedUser) {
-        document.getElementById("lockNotice").style.display = "block";
-      } else {
-        document.getElementById("messageInput").disabled = false;
-        document.getElementById("sendBtn").disabled = false;
+        chatHistory.forEach(msg => {
+          const div = document.createElement("div");
+          div.innerHTML = `<strong style="color:${msg.role === 'user' ? '#007bff' : '#ff6600'}">${msg.role === 'user' ? user.username : character.name}:</strong> ${msg.content}`;
+          chatbox.appendChild(div);
+        });
 
+        chatbox.scrollTop = chatbox.scrollHeight;
+      }
+
+      function saveChatHistory() {
+        localStorage.setItem(historyKey, JSON.stringify(chatHistory));
+      }
+
+      function resetConversation() {
+        if (!confirm("Start over and delete the entire conversation?")) return;
+        chatHistory = [];
+        localStorage.removeItem(historyKey);
+        chatbox.innerHTML = "";
+        setupSystemPrompt();
+      }
+
+      function setupSystemPrompt() {
         const sfwNote = character.sfw === "NSFW"
-          ? "You are allowed to engage in mature, suggestive, or explicit conversations."
+          ? "You are allowed to engage in mature or explicit conversations."
           : "Keep all responses safe-for-work, respectful, and appropriate.";
 
+        const toneHint = character.description.toLowerCase().includes("joker") ? 
+            "Speak like the Joker from Batman—dark humor, chaos, unpredictable tone." :
+            character.description.toLowerCase().includes("yoda") ?
+            "Speak like Yoda from Star Wars—wise and backward phrasing." :
+            character.description.toLowerCase().includes("iron man") ?
+            "Speak like Tony Stark—witty, sarcastic, confident." : 
+            "";
+
         const systemPrompt = `
-You are ${character.name}.
-${character.description}
-
-Your personality is shaped by these traits: ${character.tags}.
+You are ${character.name}, an AI character created for roleplay.
+Description: ${character.description}
+Personality: ${character.tags}
 ${sfwNote}
+${toneHint}
 
-Stay in character, speak naturally, and respond like a real person would in a back-and-forth conversation.
+Mimic the character's tone, speech style, and vocabulary. Adapt your responses over time and grow more engaging as the chat continues.
+Only respond as ${character.name}.
         `.trim();
 
         chatHistory.push({ role: "system", content: systemPrompt });
       }
 
-      async function sendMessage() {
-        if (!loggedUser) return;
+      if (chatHistory.length === 0 && user) {
+        setupSystemPrompt();
+        saveChatHistory();
+      }
 
-        const input = document.getElementById("messageInput");
-        const text = input.value.trim();
+      async function sendMessage() {
+        const text = messageInput.value.trim();
         if (!text) return;
 
-        const chatbox = document.getElementById("chatbox");
         const msg = document.createElement("div");
-        msg.innerHTML = `<strong style="color:#007bff">${loggedUser.username}:</strong> ${text}`;
+        msg.innerHTML = `<strong style="color:#007bff">${user.username}:</strong> ${text}`;
         chatbox.appendChild(msg);
         chatbox.scrollTop = chatbox.scrollHeight;
-        input.value = "";
+        messageInput.value = "";
 
         chatHistory.push({ role: "user", content: text });
+        saveChatHistory();
 
         try {
           const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -173,9 +219,10 @@ Stay in character, speak naturally, and respond like a real person would in a ba
 
           const data = await response.json();
           let aiText = "Hmm...";
-          if (data && data.choices && data.choices[0] && data.choices[0].message) {
+          if (data?.choices?.[0]?.message?.content) {
             aiText = data.choices[0].message.content;
             chatHistory.push({ role: "assistant", content: aiText });
+            saveChatHistory();
           } else if (data.error) {
             aiText = `Error: ${data.error.message}`;
           }
