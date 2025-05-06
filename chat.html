@@ -136,6 +136,8 @@ const apiKey = localStorage.getItem("groq_api_key");
 
 let messages = JSON.parse(localStorage.getItem(chatKey) || "[]");
 
+messages = messages.filter(m => ["user", "assistant", "system"].includes(m.role));
+
 function renderMessages() {
   chatBox.innerHTML = "";
   messages.forEach(m => {
@@ -190,8 +192,17 @@ async function sendMessage() {
     renderMessages();
   }
 }
+
+function startOver() {
+  if (confirm("Start this chat over?")) {
+    messages = [];
+    localStorage.setItem(chatKey, JSON.stringify([]));
+    renderMessages();
+  }
+}
+
+renderMessages();
+
   </script>
-
-
 </body>
 </html>
