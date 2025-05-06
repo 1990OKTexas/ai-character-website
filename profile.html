@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Your Profile</title>
+  <title>User Profile</title>
   <style>
     body {
       font-family: sans-serif;
@@ -103,7 +103,7 @@
     <div id="statusBadge" class="status">Online</div>
   </div>
 
-  <div class="message-box" style="max-width:600px;margin:0 auto 30px auto;">
+  <div class="message-box" id="messageBox" style="max-width:600px;margin:0 auto 30px auto; display: none;">
     <h3>Message Admin</h3>
     <textarea id="adminMessage" rows="3" placeholder="Write your message here..." style="width:100%;padding:10px;border-radius:6px;border:1px solid #ccc;"></textarea>
     <button onclick="sendAdminMessage()" style="margin-top:10px;padding:8px 12px;background:#007bff;color:white;border:none;border-radius:6px;">Send Message</button>
@@ -115,68 +115,45 @@
   </div>
 
   <script>
-    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+    const params = new URLSearchParams(window.location.search);
+    const viewingUser = params.get("user");
+    const allUsers = JSON.parse(localStorage.getItem("users") || "[]");
+    const currentUser = JSON.parse(localStorage.getItem("loggedInUser"));
+
+    let user = null;
+    if (viewingUser) {
+      user = allUsers.find(u => u.username === viewingUser);
+    } else {
+      user = currentUser;
+    }
 
     if (!user) {
-      alert("You must be logged in to view your profile.");
-      window.location.href = "login.html";
+      alert("User not found or not logged in.");
+      window.location.href = "index.html";
+    }
+
+    const isOwner = currentUser && currentUser.username === user.username;
+
+    document.getElementById("displayName").textContent = "@" + user.username;
+    const signup = new Date(user.signupDate || Date.now());
+    document.getElementById("signupDate").textContent = "Signed up on: " + signup.toLocaleDateString("en-US");
+    const defaultPic = "https://via.placeholder.com/160?text=User";
+    document.getElementById("profilePic").src = user.profilePic || defaultPic;
+
+    if (isOwner) {
+      document.getElementById("messageBox").style.display = "block";
+    }
+
+    const characters = JSON.parse(localStorage.getItem("characters") || "[]");
+    const myCharacters = characters.filter(c => c.createdBy === user.username);
+    const container = document.getElementById("userCharacters");
+
+    if (myCharacters.length === 0) {
+      container.innerHTML = "<p style='text-align:center;'>This user hasn't created any characters yet.</p>";
     } else {
-      document.getElementById("displayName").textContent = "@" + user.username;
-      const signup = new Date(user.signupDate || Date.now());
-      document.getElementById("signupDate").textContent = "Signed up on: " + signup.toLocaleDateString("en-US");
-
-      const defaultPic = "https://via.placeholder.com/160?text=User";
-      document.getElementById("profilePic").src = user.profilePic || defaultPic;
-
-      const characters = JSON.parse(localStorage.getItem("characters") || "[]");
-      const myCharacters = characters.filter(c => c.createdBy === user.username);
-      const container = document.getElementById("userCharacters");
-
-      if (myCharacters.length === 0) {
-        container.innerHTML = "<p style='text-align:center;'>You haven’t created any characters yet.</p>";
-      } else {
-        myCharacters.forEach(char => {
-          const div = document.createElement("div");
-          div.className = "char-card";
-          div.innerHTML = `
-            <img src="${char.image}" />
-            <h4>${char.name}</h4>
-            <button onclick="location.href='chat.html?name=${encodeURIComponent(char.name)}'">Chat Now</button>
-            <button onclick="editCharacter('${char.name}')">Edit</button>
-            <button class="delete-btn" onclick="deleteCharacter('${char.name}')">Delete</button>
-          `;
-          container.appendChild(div);
-        });
-      }
-    }
-
-    function sendAdminMessage() {
-      const message = document.getElementById("adminMessage").value.trim();
-      if (!message) return alert("Please type a message.");
-
-      const existing = JSON.parse(localStorage.getItem("adminMessages") || "[]");
-      existing.push({
-        from: user.username,
-        text: message,
-        date: new Date().toLocaleString()
-      });
-
-      localStorage.setItem("adminMessages", JSON.stringify(existing));
-      alert("Your message has been sent to the admin.");
-      document.getElementById("adminMessage").value = "";
-    }
-
-    function editCharacter(name) {
-      location.href = `edit.html?name=${encodeURIComponent(name)}`;
-    }
-
-    function deleteCharacter(name) {
-      if (!confirm(`Delete ${name}? This cannot be undone.`)) return;
-      const characters = JSON.parse(localStorage.getItem("characters") || "[]");
-      const updated = characters.filter(c => c.name !== name);
-      localStorage.setItem("characters", JSON.stringify(updated));
-      location.reload();
-    }
-  </script>
-</body>
-</html>
+      myCharacters.forEach(char => {
+        const div = document.createElement("div");
+        div.className = "char-card";
+        div.innerHTML = `
+          <img src="${char.image}" />
+          <h4>${
