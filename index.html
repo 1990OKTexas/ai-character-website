@@ -1,4 +1,4 @@
-<!DOCTYPE html><html>
+      <!DOCTYPE html><html>
 <head>
   <title>AI Character Homepage</title>
   <style>
@@ -78,10 +78,13 @@
       <button onclick="window.location.href='create.html'">Create A Character</button>
       <button onclick="window.location.href='profile.html'">Go to Profile</button>
     </div>
-    <button class="right-button" onclick="window.location.href='admin.html'">Admin Login</button>
+    <div style="display:flex; gap:10px; align-items:center;" id="adminControls">
+  <button class="right-button" onclick="window.location.href='admin.html'">Admin Login</button>
+  <button class="right-button" onclick="signOut()" id="signOutBtn" style="display:none;">Sign Out</button>
+</div>
   </div>  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Search Characters" oninput="filterCharacters()">
-  </div>  <h2 style="text-align:center">AI Homepage</h2>
+    <input type="text" id="searchInput" placeholder="Search Characters or @Usernames" oninput="filterCharacters()">
+  </div>  <h2 style="text-align:center">AI Characters</h2>
   <div class="character-grid" id="characterGrid"></div>  <script>
     const characters = JSON.parse(localStorage.getItem("characters") || "[]");
     const grid = document.getElementById("characterGrid");
@@ -109,5 +112,22 @@
 }
 
     renderCharacters();
+  
+
+    function signOut() {
+      localStorage.removeItem("loggedInUser");
+      location.reload();
+    }
+  
+
+    const loggedInUser = localStorage.getItem("loggedInUser");
+    if (loggedInUser) {
+      document.getElementById("signOutBtn").style.display = "inline-block";
+    }
+
+    function signOut() {
+      localStorage.removeItem("loggedInUser");
+      location.reload();
+    }
   </script></body>
-</html>
+      </html>
