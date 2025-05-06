@@ -13,8 +13,13 @@
         display: flex;
         justify-content: space-between;
         padding: 16px 20px;
+        align-items: center;
       }
-      .create-btn, .admin-btn {
+      .top-bar div {
+        display: flex;
+        gap: 10px;
+      }
+      .create-btn, .admin-btn, .user-btn {
         background-color: #007bff;
         color: white;
         border: none;
@@ -25,6 +30,9 @@
       }
       .admin-btn {
         background-color: #dc3545;
+      }
+      .user-btn {
+        background-color: #17a2b8;
       }
       h1 {
         text-align: center;
@@ -63,7 +71,10 @@
   <body>
 
     <div class="top-bar">
-      <button class="create-btn" onclick="location.href='create.html'">Create A Character</button>
+      <div>
+        <button class="create-btn" onclick="location.href='create.html'">Create A Character</button>
+        <button class="user-btn" onclick="location.href='login.html'">Sign In / Sign Up</button>
+      </div>
       <button class="admin-btn" onclick="location.href='admin.html'">Admin Login</button>
     </div>
 
