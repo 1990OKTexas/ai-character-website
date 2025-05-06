@@ -43,9 +43,6 @@
     .online {
       background: #28a745;
     }
-    .offline {
-      background: #6c757d;
-    }
     .home-btn {
       position: fixed;
       top: 10px;
@@ -83,13 +80,17 @@
       object-fit: cover;
     }
     .char-card button {
-      margin-top: 10px;
-      padding: 6px 12px;
-      background: #28a745;
+      margin: 6px 4px 0 4px;
+      padding: 6px 10px;
+      background: #007bff;
       color: white;
       border: none;
       border-radius: 6px;
       cursor: pointer;
+      font-size: 12px;
+    }
+    .delete-btn {
+      background: #dc3545;
     }
   </style>
 </head>
@@ -101,7 +102,7 @@
     <img id="profilePic" class="profile-pic" src="" alt="Profile Picture" />
     <h2 id="displayName"></h2>
     <div class="meta" id="signupDate"></div>
-    <div id="statusBadge" class="status">Status</div>
+    <div id="statusBadge" class="status online">Online</div>
   </div>
 
   <div class="char-section">
@@ -117,20 +118,12 @@
       window.location.href = "login.html";
     } else {
       document.getElementById("displayName").textContent = "@" + user.username;
-
       const signup = new Date(user.signupDate || Date.now());
-      const dateStr = signup.toLocaleDateString("en-US", {
-        year: 'numeric', month: 'short', day: 'numeric'
-      });
-      document.getElementById("signupDate").textContent = "Signed up on: " + dateStr;
-
-      document.getElementById("statusBadge").textContent = "Online";
-      document.getElementById("statusBadge").classList.add("online");
+      document.getElementById("signupDate").textContent = "Signed up on: " + signup.toLocaleDateString("en-US");
 
       const defaultPic = "https://via.placeholder.com/160?text=User";
       document.getElementById("profilePic").src = user.profilePic || defaultPic;
 
-      // Load characters by this user
       const characters = JSON.parse(localStorage.getItem("characters") || "[]");
       const myCharacters = characters.filter(c => c.createdBy === user.username);
       const container = document.getElementById("userCharacters");
@@ -145,10 +138,25 @@
             <img src="${char.image}" />
             <h4>${char.name}</h4>
             <button onclick="location.href='chat.html?name=${encodeURIComponent(char.name)}'">Chat Now</button>
+            <button onclick="editCharacter('${char.name}')">Edit</button>
+            <button class="delete-btn" onclick="deleteCharacter('${char.name}')">Delete</button>
           `;
           container.appendChild(div);
         });
       }
+    }
+
+    function editCharacter(name) {
+      location.href = `edit.html?name=${encodeURIComponent(name)}`;
+    }
+
+    function deleteCharacter(name) {
+      if (!confirm(`Delete ${name}? This cannot be undone.`)) return;
+
+      const characters = JSON.parse(localStorage.getItem("characters") || "[]");
+      const updated = characters.filter(c => c.name !== name);
+      localStorage.setItem("characters", JSON.stringify(updated));
+      location.reload();
     }
   </script>
 </body>
