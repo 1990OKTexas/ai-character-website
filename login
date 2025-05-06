@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Login</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        background-color: #f9f9f9;
+        padding: 20px;
+      }
+      .login-container {
+        max-width: 400px;
+        margin: 80px auto;
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        text-align: center;
+      }
+      h2 {
+        font-size: 22px;
+        margin-bottom: 20px;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        font-size: 14px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+      }
+      button {
+        width: 100%;
+        margin-top: 16px;
+        padding: 10px;
+        font-size: 14px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .signup-msg {
+        margin-top: 16px;
+        font-size: 13px;
+        color: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <h2><strong>LOG IN</strong></h2>
+      <input type="text" id="username" placeholder="Username" />
+      <input type="password" id="password" placeholder="Password" />
+      <button onclick="handleLogin()">Log In</button>
+      <div class="signup-msg">
+        If you don't have an account, <a href="signup.html">sign up here</a>. It is 100% free!
+      </div>
+    </div>
+
+    <script>
+      function handleLogin() {
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("
