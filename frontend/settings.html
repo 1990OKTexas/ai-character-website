@@ -28,26 +28,58 @@
     }
     .msg {
       margin-top: 16px;
+      font-size: 14px;
+    }
+    .success {
       color: green;
+    }
+    .error {
+      color: red;
     }
   </style>
 </head>
 <body>
 
   <h2>Paste Your Groq API Key</h2>
-  <input id="apiKeyInput" type="text" value="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">
+  <input id="apiKeyInput" type="text" placeholder="gsk_...">
   <br>
   <button onclick="saveKey()">Save API Key</button>
   <div class="msg" id="msg"></div>
 
   <script>
-    function saveKey() {
+    const API_BASE = 'https://your-backend-url.onrender.com';
+
+    async function saveKey() {
       const key = document.getElementById("apiKeyInput").value.trim();
-      if (key.startsWith("gsk_")) {
-        localStorage.setItem("groq_api_key", key);
-        document.getElementById("msg").textContent = "API Key Saved!";
-      } else {
-        document.getElementById("msg").textContent = "Invalid API Key";
+      const msg = document.getElementById("msg");
+
+      msg.textContent = "";
+      msg.className = "msg";
+
+      if (!key || !key.startsWith("gsk_")) {
+        msg.textContent = "Invalid Groq API key.";
+        msg.classList.add("error");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/users/key`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ groqKey: key })
+        });
+
+        if (res.ok) {
+          msg.textContent = "Groq API key saved successfully!";
+          msg.classList.add("success");
+        } else {
+          msg.textContent = "Failed to save key.";
+          msg.classList.add("error");
+        }
+      } catch (err) {
+        msg.textContent = "Error saving key.";
+        msg.classList.add("error");
       }
     }
   </script>
