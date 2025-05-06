@@ -16,6 +16,19 @@
       background: #fff;
       box-shadow: 0 1px 4px rgba(0,0,0,0.1);
       border-radius: 8px;
+      position: relative;
+    }
+    .go-home {
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 14px;
     }
     .chat-header img {
       width: 100px;
@@ -93,16 +106,24 @@
       border-radius: 8px;
       cursor: pointer;
     }
+    .typing {
+      font-style: italic;
+      color: #888;
+      text-align: center;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <div class="chat-header">
+    <button class="go-home" onclick="window.location.href='index.html'">Go Home</button>
     <img id="charImage" src="" alt="Character Image">
     <div class="online">● Online</div>
-    <div class="creator" id="creatorName">Created by: @someone</div>
+    <div class="creator" id="creatorName"></div>
     <div class="description"><strong>Description:</strong> <span id="charDesc"></span></div>
   </div>
   <div class="chat-box" id="chatBox"></div>
+  <div class="typing" id="typingStatus"></div>
   <div class="input-area">
     <input type="text" id="messageInput" placeholder="Type a message...">
     <button onclick="sendMessage()">Send</button>
@@ -125,17 +146,17 @@ if (!character) {
 
 document.getElementById("charImage").src = character.image;
 document.getElementById("charDesc").textContent = character.description;
-document.getElementById("creatorName").textContent = "Created by: @" + character.createdBy;
+document.getElementById("creatorName").innerHTML = `Created by: <a href='profile.html?user=${character.createdBy}' style='color:#007bff;'>@${character.createdBy}</a>`;
 
 const chatBox = document.getElementById("chatBox");
 const input = document.getElementById("messageInput");
+const typingStatus = document.getElementById("typingStatus");
 const chatKey = `chat_history_${user.username}_${charName}`;
 const userPic = user.profilePic || "https://via.placeholder.com/32?text=U";
 const aiPic = character.image || "https://via.placeholder.com/32?text=A";
 const apiKey = localStorage.getItem("groq_api_key");
 
 let messages = JSON.parse(localStorage.getItem(chatKey) || "[]");
-
 messages = messages.filter(m => ["user", "assistant", "system"].includes(m.role));
 
 function renderMessages() {
@@ -159,6 +180,7 @@ async function sendMessage() {
   messages.push({ role: "user", content: text });
   renderMessages();
   input.value = "";
+  typingStatus.textContent = "Typing...";
 
   const isFirst = !messages.some(m => m.role === "assistant");
 
@@ -186,9 +208,11 @@ async function sendMessage() {
     const reply = data.choices?.[0]?.message?.content || data.error?.message || "Hmm...";
     messages.push({ role: "assistant", content: reply });
     localStorage.setItem(chatKey, JSON.stringify(messages));
+    typingStatus.textContent = "";
     renderMessages();
   } catch {
     messages.push({ role: "assistant", content: "Something went wrong." });
+    typingStatus.textContent = "";
     renderMessages();
   }
 }
