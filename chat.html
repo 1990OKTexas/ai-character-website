@@ -94,7 +94,7 @@
     const chatKey = `chat_history_${user.username}_${charName}`;
     const userPic = user.profilePic || "https://via.placeholder.com/32?text=U";
     const aiPic = character.image || "https://via.placeholder.com/32?text=A";
-    const apiKey = localStorage.getItem("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"); // You should store your Groq API key like this
+    const apiKey = localStorage.getItem("groq_api_key","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"); // You should store your Groq API key like this
 
     let messages = JSON.parse(localStorage.getItem(chatKey) || "[]");
 
