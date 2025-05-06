@@ -82,6 +82,7 @@
   <div id="chatList"></div>
 
   <h2>Messages from Users</h2>
+  <button class="clear-btn" onclick="deleteAllMessages()">Delete All Messages</button>
   <div id="messageList"></div>
 
   <script>
@@ -191,6 +192,13 @@
         div.innerHTML = `<strong>@${m.from}</strong> <em>${m.date}</em><br>${m.text}`;
         messageList.appendChild(div);
       });
+    }
+
+    function deleteAllMessages() {
+      if (!confirm("Are you sure you want to delete all user messages?")) return;
+      localStorage.removeItem("adminMessages");
+      document.getElementById("messageList").innerHTML = "<p>No messages.</p>";
+      alert("All messages deleted.");
     }
   </script>
 
