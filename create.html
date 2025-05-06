@@ -47,4 +47,93 @@
         margin-top: 12px;
         padding: 10px;
         width: 100%;
-        background-color:
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+
+      .preview {
+        text-align: center;
+        margin-top: 10px;
+      }
+
+      .preview img {
+        width: 160px;
+        height: 160px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        background: #eee;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Create a New AI Character</h1>
+
+    <form onsubmit="handleSubmit(event)">
+      <label>Character's Name</label>
+      <input type="text" id="name" required />
+
+      <label>Sex</label>
+      <select id="sex">
+        <option>Female</option>
+        <option>Male</option>
+        <option>Non-binary</option>
+      </select>
+
+      <label>Personality Tags (use #)</label>
+      <input type="text" id="tags" placeholder="#fun #smart" required />
+
+      <label>Is the Character SFW or NSFW?</label>
+      <select id="sfw">
+        <option>SFW</option>
+        <option>NSFW</option>
+      </select>
+
+      <label>Description</label>
+      <textarea id="description" rows="3" required></textarea>
+
+      <label>Starter Message</label>
+      <textarea id="starter" rows="3" required></textarea>
+
+      <label>Upload Image</label>
+      <input type="file" id="uploadImg" accept="image/*" onchange="previewImage(this)" />
+
+      <label>Or Paste Image URL</label>
+      <input type="text" id="imageUrl" oninput="previewFromUrl(this.value)" placeholder="https://example.com/image.jpg" />
+
+      <div class="preview">
+        <img id="imgPreview" src="" alt="Image Preview" />
+      </div>
+
+      <button type="submit">Create Character</button>
+    </form>
+
+    <script>
+      function previewImage(input) {
+        const preview = document.getElementById("imgPreview");
+        const file = input.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            preview.src = e.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+
+      function previewFromUrl(url) {
+        const preview = document.getElementById("imgPreview");
+        preview.src = url;
+      }
+
+      function handleSubmit(event) {
+        event.preventDefault();
+        alert("Character submitted! (Storage feature coming soon.)");
+      }
+    </script>
+  </body>
+</html>
