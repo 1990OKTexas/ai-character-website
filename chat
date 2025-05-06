@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chat</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f4f4f4;
+      }
+      .container {
+        max-width: 500px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 0 6px rgba(0,0,0,0.1);
+      }
+      .character-img {
+        display: block;
+        margin: 0 auto 10px;
+        width: 160px;
+        height: 160px;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 1px solid #ccc;
+      }
+      .description {
+        text-align: center;
+        font-size: 12px;
+        color: #555;
+        margin-bottom: 20px;
+      }
+      .chat-area {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        height: 300px;
+        overflow-y: auto;
+        padding: 10px;
+        margin-bottom: 10px;
+        background: #fefefe;
+      }
+      .input-area {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      input[type="text"], input[type="color"] {
+        padding: 6px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        flex: 1;
+      }
+      .chat-controls {
+        text-align: center;
+        margin-bottom: 16px;
+      }
+      #messageInput {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        margin-top: 6px;
+      }
+      #sendBtn {
+        margin-top: 6px;
+        padding: 8px 12px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <img id="charImg" class="character-img" src="" alt="Character Image" />
+      <div class="description" id="charDesc">Loading description...</div>
+
+      <div class="chat-controls" id="setupForm">
+        <div class="input-area">
+          <input type="text" id="username" placeholder="Your name" />
+          <input type="color" id="color" value="#007bff" />
+        </div>
+        <button id="startBtn">Chat Now</button>
+      </div>
+
+      <div class="chat-area" id="chatbox"></div>
+
+      <input type="text" id="messageInput" placeholder="Type a message..." disabled />
+      <button id="sendBtn" onclick="sendMessage()" disabled>Send</button>
+    </div>
+
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const charName = urlParams.get('name');
+      const characters = JSON.parse(localStorage.getItem("characters") || "[]");
+      const character = characters.find(c => c.name === charName);
+
+      if (character) {
+        document.getElementById("charImg").src = character.image;
+        document.getElementById("charDesc").textContent = character.description;
+      }
+
+      let username = "";
+      let userColor = "#007bff";
+      let locked = true;
+
+      document.getElementById("startBtn").onclick = function () {
+        const nameInput = document.getElementById("username").value.trim();
+        const colorInput = document.getElementById("color").value;
+        if (!nameInput) {
+          alert("Please enter your username.");
+          return;
+        }
+
+        username = nameInput;
+        userColor = colorInput;
+        locked = false;
+
+        document.getElementById("messageInput").disabled = false;
+        document.getElementById("sendBtn").disabled = false;
+        document.getElementById("username").disabled = true;
+        document.getElementById("color").disabled = true;
+        document.getElementById("startBtn").disabled = true;
+      };
+
+      function sendMessage() {
+        if (locked) return;
+        const input = document.getElementById("messageInput");
+        const text = input.value.trim();
+        if (!text) return;
+
+        const chatbox = document.getElementById("chatbox");
+        const msg = document.createElement("div");
+        msg.innerHTML = `<strong style="color:${userColor}">${username}:</strong> ${text}`;
+        chatbox.appendChild(msg);
+        chatbox.scrollTop = chatbox.scrollHeight;
+        input.value = "";
+      }
+    </script>
+  </body>
+</html>
