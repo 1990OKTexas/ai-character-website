@@ -170,7 +170,7 @@ const body = {
   model: "llama3-70b-8192",
   messages: [
     { role: "system", content: systemPrompt },
-    ...messages
+    ...messages.slice(-10)
   ]
 };
 
