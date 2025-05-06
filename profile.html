@@ -25,7 +25,7 @@
       border: 3px solid #ccc;
     }
     h2 {
-      margin-top: 16px;
+      margin-top: 8px;
       margin-bottom: 8px;
     }
     .meta {
@@ -116,10 +116,11 @@
 
   <div class="profile-container">
     <img id="profilePic" class="profile-pic" src="" alt="Profile Picture" />
+    <div id="adminTag" style="font-size:12px;color:gold;margin-top:10px;display:none;">ADMIN</div>
     <h2 id="displayName"></h2>
     <div class="meta" id="signupDate"></div>
     <div id="statusBadge" class="status">Online</div>
-    <button onclick="showEditForm()" style="margin-top: 12px;">Edit Profile</button>
+    <button id="editBtn" onclick="showEditForm()" style="margin-top: 12px; display: none;">Edit Profile</button>
   </div>
 
   <div class="edit-form" id="editForm">
@@ -143,24 +144,43 @@
   </div>
 
   <script>
-    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+    const params = new URLSearchParams(window.location.search);
+    const viewingUser = params.get("user");
     const allUsers = JSON.parse(localStorage.getItem("users") || "[]");
+    const currentUser = JSON.parse(localStorage.getItem("loggedInUser"));
+    let user = null;
+
+    if (viewingUser) {
+      user = allUsers.find(u => u.username === viewingUser);
+    } else {
+      user = currentUser;
+    }
 
     if (!user) {
-      alert("You must be logged in.");
-      location.href = "login.html";
+      alert("User not found or not logged in.");
+      location.href = "index.html";
     }
+
+    const isOwner = currentUser && currentUser.username === user.username;
 
     document.getElementById("displayName").textContent = "@" + user.username;
     document.getElementById("signupDate").textContent = "Signed up on: " + new Date(user.signupDate || Date.now()).toLocaleDateString();
     document.getElementById("profilePic").src = user.profilePic || "https://via.placeholder.com/160?text=User";
+
+    if (user.username === "TazDaz") {
+      document.getElementById("adminTag").style.display = "block";
+    }
+
+    if (isOwner) {
+      document.getElementById("editBtn").style.display = "inline-block";
+    }
 
     const characters = JSON.parse(localStorage.getItem("characters") || "[]");
     const myCharacters = characters.filter(c => c.createdBy === user.username);
     const container = document.getElementById("userCharacters");
 
     if (myCharacters.length === 0) {
-      container.innerHTML = "<p style='text-align:center;'>You haven’t created any characters yet.</p>";
+      container.innerHTML = "<p style='text-align:center;'>This user hasn’t created any characters yet.</p>";
     } else {
       myCharacters.forEach(char => {
         const div = document.createElement("div");
@@ -169,8 +189,10 @@
           <img src="${char.image}" />
           <h4>${char.name}</h4>
           <button onclick="location.href='chat.html?name=${encodeURIComponent(char.name)}'">Chat Now</button>
-          <button onclick="editCharacter('${char.name}')">Edit</button>
-          <button class="delete-btn" onclick="deleteCharacter('${char.name}')">Delete</button>
+          ${isOwner ? `
+            <button onclick="editCharacter('${char.name}')">Edit</button>
+            <button class="delete-btn" onclick="deleteCharacter('${char.name}')">Delete</button>
+          ` : ""}
         `;
         container.appendChild(div);
       });
