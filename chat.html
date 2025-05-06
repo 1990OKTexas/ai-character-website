@@ -16,14 +16,11 @@
         padding: 20px;
         border-radius: 12px;
         box-shadow: 0 0 6px rgba(0,0,0,0.1);
-        position: relative;
-      }
-      .top-bar {
-        position: absolute;
-        top: -60px;
-        left: 0;
       }
       .home-btn {
+        position: fixed;
+        top: 10px;
+        left: 10px;
         background-color: #6c757d;
         color: white;
         border: none;
@@ -31,6 +28,7 @@
         border-radius: 6px;
         cursor: pointer;
         font-size: 13px;
+        z-index: 1001;
       }
       .character-img {
         display: block;
@@ -78,7 +76,7 @@
         cursor: pointer;
       }
 
-      /* Popup Modal */
+      /* Modal popup */
       .modal {
         position: fixed;
         top: 0;
@@ -122,7 +120,10 @@
   </head>
   <body>
 
-    <!-- Modal for Name/Color -->
+    <!-- Go Home Button -->
+    <button class="home-btn" onclick="location.href='index.html'">Go Home</button>
+
+    <!-- Modal for username/color -->
     <div class="modal" id="setupModal">
       <div class="modal-content">
         <h3>Enter Your Chat Name</h3>
@@ -133,12 +134,8 @@
       </div>
     </div>
 
-    <!-- Main Chat Area -->
+    <!-- Chat Container -->
     <div class="container">
-      <div class="top-bar">
-        <button class="home-btn" onclick="location.href='index.html'">Go Home</button>
-      </div>
-
       <img id="charImg" class="character-img" src="" alt="Character Image" />
       <h2 id="charName"></h2>
       <div class="description">
