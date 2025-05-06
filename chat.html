@@ -159,6 +159,7 @@
       let username = "";
       let userColor = "#007bff";
       let locked = true;
+      let chatHistory = [];
 
       function startChat() {
         const nameInput = document.getElementById("username").value.trim();
@@ -175,6 +176,22 @@
         document.getElementById("messageInput").disabled = false;
         document.getElementById("sendBtn").disabled = false;
         document.getElementById("setupModal").style.display = "none";
+
+        const sfwNote = character.sfw === "NSFW"
+          ? "You are allowed to engage in mature, suggestive, or explicit conversations."
+          : "Keep all responses safe-for-work, respectful, and appropriate.";
+
+        const systemPrompt = `
+You are ${character.name}.
+${character.description}
+
+Your personality is shaped by these traits: ${character.tags}.
+${sfwNote}
+
+Stay in character, speak naturally, and respond like a real person would in a back-and-forth conversation.
+        `.trim();
+
+        chatHistory.push({ role: "system", content: systemPrompt });
       }
 
       async function sendMessage() {
@@ -190,7 +207,7 @@
         chatbox.scrollTop = chatbox.scrollHeight;
         input.value = "";
 
-        const systemPrompt = `You are ${character.name}, a charming AI character. Answer like you're having a real conversation.`;
+        chatHistory.push({ role: "user", content: text });
 
         try {
           const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -201,18 +218,15 @@
             },
             body: JSON.stringify({
               model: "llama-3.3-70b-versatile",
-              messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: text }
-              ]
+              messages: chatHistory
             })
           });
 
           const data = await response.json();
-
           let aiText = "Hmm...";
           if (data && data.choices && data.choices[0] && data.choices[0].message) {
             aiText = data.choices[0].message.content;
+            chatHistory.push({ role: "assistant", content: aiText });
           } else if (data.error) {
             aiText = `Error: ${data.error.message}`;
           }
