@@ -9,20 +9,22 @@
         padding: 0;
         background: #f9f9f9;
       }
-      .header {
+      .top-bar {
         display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        padding: 16px;
+        justify-content: space-between;
+        padding: 16px 20px;
       }
-      .create-btn {
-        background-color: #28a745;
+      .create-btn, .admin-btn {
+        background-color: #007bff;
         color: white;
         border: none;
         padding: 8px 12px;
         border-radius: 6px;
         font-size: 14px;
         cursor: pointer;
+      }
+      .admin-btn {
+        background-color: #dc3545;
       }
       h1 {
         text-align: center;
@@ -50,7 +52,7 @@
       .chat-btn {
         margin-top: 10px;
         padding: 8px 16px;
-        background-color: #007bff;
+        background-color: #28a745;
         color: white;
         border: none;
         border-radius: 6px;
@@ -60,8 +62,9 @@
   </head>
   <body>
 
-    <div class="header">
+    <div class="top-bar">
       <button class="create-btn" onclick="location.href='create.html'">Create A Character</button>
+      <button class="admin-btn" onclick="location.href='admin.html'">Admin Login</button>
     </div>
 
     <h1>AI Characters</h1>
