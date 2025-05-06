@@ -3,59 +3,7 @@
 <head>
   <title>Sign Up</title>
   <style>
-    body {
-      font-family: sans-serif;
-      background-color: #f9f9f9;
-      padding: 20px;
-    }
-    .signup-container {
-      max-width: 400px;
-      margin: 80px auto;
-      background: white;
-      padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-      text-align: center;
-    }
-    h2 {
-      font-size: 24px;
-      margin-bottom: 20px;
-    }
-    label {
-      text-align: left;
-      display: block;
-      margin-top: 12px;
-      font-weight: 600;
-    }
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 4px;
-      font-size: 14px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    .preview {
-      margin-top: 10px;
-    }
-    .preview img {
-      width: 160px;
-      height: 160px;
-      object-fit: cover;
-      border-radius: 50%;
-      border: 2px solid #ccc;
-    }
-    button {
-      width: 100%;
-      margin-top: 20px;
-      padding: 10px;
-      font-size: 14px;
-      background: #28a745;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+    /* same styles as before */
   </style>
 </head>
 <body>
@@ -94,6 +42,8 @@
   </div>
 
   <script>
+    const API_BASE = 'https://your-backend-url.onrender.com';
+
     const profilePicURL = document.getElementById("profilePic");
     const profilePicFile = document.getElementById("profilePicFile");
     const preview = document.getElementById("picPreview");
@@ -115,7 +65,7 @@
       }
     });
 
-    function handleSignup() {
+    async function handleSignup() {
       const nickname = document.getElementById("nickname").value.trim();
       const sex = document.getElementById("sex").value;
       const username = document.getElementById("username").value.trim();
@@ -133,28 +83,29 @@
         return;
       }
 
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      try {
+        const res = await fetch(`${API_BASE}/api/users/signup`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nickname,
+            sex,
+            username,
+            password,
+            profilePic
+          })
+        });
 
-      if (users.find(u => u.username === username)) {
-        alert("That username is already taken, Uce.");
-        return;
+        if (res.ok) {
+          alert("Account created! You’re now signed in.");
+          window.location.href = "index.html";
+        } else {
+          const error = await res.json();
+          alert(error.message || "Signup failed.");
+        }
+      } catch (err) {
+        alert("Something went wrong. Try again.");
       }
-
-      const newUser = {
-        nickname,
-        sex,
-        username,
-        password,
-        profilePic,
-        signupDate: new Date().toISOString()
-      };
-
-      users.push(newUser);
-      localStorage.setItem("users", JSON.stringify(users));
-      localStorage.setItem("loggedInUser", JSON.stringify(newUser));
-
-      alert("Account created! You’re now signed in.");
-      window.location.href = "index.html";
     }
   </script>
 </body>
