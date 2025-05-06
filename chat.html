@@ -16,6 +16,21 @@
         padding: 20px;
         border-radius: 12px;
         box-shadow: 0 0 6px rgba(0,0,0,0.1);
+        position: relative;
+      }
+      .top-bar {
+        position: absolute;
+        top: -60px;
+        left: 0;
+      }
+      .home-btn {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
       }
       .character-img {
         display: block;
@@ -106,6 +121,7 @@
     </style>
   </head>
   <body>
+
     <!-- Modal for Name/Color -->
     <div class="modal" id="setupModal">
       <div class="modal-content">
@@ -119,9 +135,15 @@
 
     <!-- Main Chat Area -->
     <div class="container">
+      <div class="top-bar">
+        <button class="home-btn" onclick="location.href='index.html'">Go Home</button>
+      </div>
+
       <img id="charImg" class="character-img" src="" alt="Character Image" />
       <h2 id="charName"></h2>
-      <div class="description"><strong>Description:</strong> <span id="charDesc">Loading...</span></div>
+      <div class="description">
+        <strong>Description:</strong> <span id="charDesc">Loading...</span>
+      </div>
 
       <div class="chat-area" id="chatbox"></div>
 
