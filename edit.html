@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Character</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+    }
+    .form-container {
+      max-width: 500px;
+      margin: 40px auto;
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 14px;
+      font-weight: bold;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 4px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .preview {
+      margin-top: 10px;
+      text-align: center;
+    }
+    .preview img {
+      width: 160px;
+      height: 160px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    .home-btn {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      z-index: 1001;
+    }
+  </style>
+</head>
+<body>
+
+  <button class="home-btn" onclick="location.href='index.html'">Go Home</button>
+
+  <div class="form-container">
+    <h2>Edit Character</h2>
+
+    <label>Character's Name:</label>
+    <input type="text" id="charName" disabled />
+
+    <label>Change Pic:</label>
+    <input type="text" id="charImageURL" placeholder="Image URL" />
+    <input type="file" id="charImageFile" accept="image/*" />
+    <div class="preview">
+      <img id="imagePreview" src="https://via.placeholder.com/160" />
+    </div>
+
+    <label>Change Sex:</label>
+    <select id="charSex">
+      <option>Male</option>
+      <option>Female</option>
+      <option>Nonbinary</option>
+      <option>N/A</option>
+    </select>
+
+    <label>Change Personalities (use #s):</label>
+    <input type="text" id="charTags" />
+
+    <label>Change SFW or NSFW:</label>
+    <select id="charSFW">
+      <option>SFW</option>
+      <option>NSFW</option>
+    </select>
+
+    <label>Change Description:</label>
+    <textarea id="charDesc" rows="3"></textarea>
+
+    <label>Starter Message:</label>
+    <textarea id="charStarter" rows="2"></textarea>
+
+    <button onclick="updateCharacter()">Update</button>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const charName = params.get("name");
+    const characters = JSON.parse(localStorage.getItem("characters") || "[]");
+    const char = characters.find(c => c.name === charName);
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+
+    if (!char || !user || char.createdBy !== user.username) {
+      alert("Unauthorized or character not found.");
+      location.href = "index.html";
+    }
+
+    document.getElementById("charName").value = char.name;
+    document.getElementById("charSex").value = char.sex;
+    document.getElementById("charTags").value = char.tags;
+    document.getElementById("charSFW").value = char.sfw;
+    document.getElementById("charDesc").value = char.description;
+    document.getElementById("charStarter").value = char.starter;
+    document.getElementById("charImageURL").value = char.image;
+    document.getElementById("imagePreview").src = char.image;
+
+    document.getElementById("charImageFile").addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = event => {
+          document.getElementById("imagePreview").src = event.target.result;
+          document.getElementById("charImageURL").value = "";
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    document.getElementById("charImageURL").addEventListener("input", e => {
+      if (e.target.value) {
+        document.getElementById("imagePreview").src = e.target.value;
+        document.getElementById("charImageFile").value = "";
+      }
+    });
+
+    function updateCharacter() {
+      const updatedChar = {
+        ...char,
+        sex: document.getElementById("charSex").value,
+        tags: document.getElementById("charTags").value,
+        sfw: document.getElementById("charSFW").value,
+        description: document.getElementById("charDesc").value,
+        starter: document.getElementById("charStarter").value,
+        image: document.getElementById("imagePreview").src
+      };
+
+      const updatedCharacters = characters.map(c => c.name === charName ? updatedChar : c);
+      localStorage.setItem("characters", JSON.stringify(updatedCharacters));
+      alert("Character updated!");
+      location.href = "profile.html";
+    }
+  </script>
+</body>
+</html>
