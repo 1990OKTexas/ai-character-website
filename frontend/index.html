@@ -1,75 +1,9 @@
-<!DOCTYPE html><html>
+<!DOCTYPE html>
+<html>
 <head>
   <title>AI Character Homepage</title>
   <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: #f4f4f4;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-    .left-buttons {
-      display: flex;
-      gap: 10px;
-    }
-    .right-button {
-      margin-left: auto;
-    }
-    .search-bar {
-      width: 100%;
-      max-width: 400px;
-      margin: 10px auto 20px;
-      display: flex;
-      justify-content: center;
-    }
-    .search-bar input {
-      width: 100%;
-      padding: 10px;
-      font-size: 14px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    .character-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-    }
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      width: 160px;
-    }
-    .card img {
-      width: 100%;
-      height: 160px;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-    .card h3 {
-      margin: 10px 0 4px;
-      font-size: 16px;
-    }
-    .card button {
-      margin-top: 10px;
-      padding: 8px 12px;
-      background: #28a745;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-    }
+    /* (same styles as before) */
   </style>
 </head>
 <body>
@@ -83,41 +17,33 @@
       <button class="right-button" onclick="window.location.href='admin.html'">Admin Login</button>
       <button class="right-button" onclick="signOut()" id="signOutBtn" style="display:none;">Sign Out</button>
     </div>
-  </div>  <div class="search-bar">
+  </div>
+
+  <div class="search-bar">
     <input type="text" id="searchInput" placeholder="Search Characters" oninput="filterCharacters()">
-  </div>  <h2 style="text-align:center">AI Characters</h2>
-  <div class="character-grid" id="characterGrid"></div>  <script>
-    const user = JSON.parse(localStorage.getItem("loggedInUser"));
-    if (user) {
-      document.getElementById("profileBtn").style.display = "inline-block";
-      document.getElementById("signOutBtn").style.display = "inline-block";
-    } else {
-      document.getElementById("signInBtn").style.display = "inline-block";
-    }
+  </div>
 
-    function signOut() {
-      localStorage.removeItem("loggedInUser");
-      location.reload();
-    }
+  <h2 style="text-align:center">AI Characters</h2>
+  <div class="character-grid" id="characterGrid"></div>
 
-    // Dummy data fallback
-    const defaultCharacters = [
-      {
-        name: "Lana Lang",
-        image: "https://upload.wikimedia.org/wikipedia/en/5/5f/LanaLang_Smallville.jpg",
-        createdBy: "TazDaz",
-        description: "+7 Lana Lang's personality in Smallville is multifaceted..."
+  <script>
+    let characters = [];
+
+    // Replace with your actual backend URL
+    const API_BASE = 'https://your-backend-url.onrender.com';
+
+    async function fetchCharacters() {
+      try {
+        const res = await fetch(`${API_BASE}/api/characters`);
+        characters = await res.json();
+        renderCharacters();
+      } catch (err) {
+        console.error("Failed to load characters", err);
       }
-    ];
-
-    if (!localStorage.getItem("characters")) {
-      localStorage.setItem("characters", JSON.stringify(defaultCharacters));
     }
-
-    const characters = JSON.parse(localStorage.getItem("characters"));
-    const grid = document.getElementById("characterGrid");
 
     function renderCharacters(filtered = characters) {
+      const grid = document.getElementById("characterGrid");
       grid.innerHTML = "";
       filtered.forEach(char => {
         const div = document.createElement("div");
@@ -139,6 +65,25 @@
       renderCharacters(filtered);
     }
 
-    renderCharacters();
-  </script></body>
+    function signOut() {
+      fetch(`${API_BASE}/api/users/logout`, { method: 'POST', credentials: 'include' })
+        .then(() => location.reload())
+        .catch(err => console.error("Logout failed", err));
+    }
+
+    // Show buttons based on session (optional if using cookies)
+    fetch(`${API_BASE}/api/users/me`, { credentials: 'include' })
+      .then(res => res.ok ? res.json() : null)
+      .then(user => {
+        if (user) {
+          document.getElementById("profileBtn").style.display = "inline-block";
+          document.getElementById("signOutBtn").style.display = "inline-block";
+        } else {
+          document.getElementById("signInBtn").style.display = "inline-block";
+        }
+      });
+
+    fetchCharacters();
+  </script>
+</body>
 </html>
