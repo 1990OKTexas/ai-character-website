@@ -75,19 +75,46 @@
 <body>
   <div class="header">
     <div class="left-buttons">
-  <button onclick="window.location.href='create.html'">Create A Character</button>
-  <button onclick="window.location.href='profile.html'" id="profileBtn" style="display:none;">Go to Profile</button>
-  <button onclick="window.location.href='login.html'" id="signInBtn" style="display:none;">Sign In</button>
-</div>
-    <div style="display:flex; gap:10px; align-items:center;" id="adminControls">
-  <button class="right-button" onclick="window.location.href='admin.html'">Admin Login</button>
-  <button class="right-button" onclick="signOut()" id="signOutBtn" style="display:none;">Sign Out</button>
-</div>
+      <button onclick="window.location.href='create.html'">Create A Character</button>
+      <button onclick="window.location.href='profile.html'" id="profileBtn" style="display:none;">Go to Profile</button>
+      <button onclick="window.location.href='login.html'" id="signInBtn" style="display:none;">Sign In</button>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button class="right-button" onclick="window.location.href='admin.html'">Admin Login</button>
+      <button class="right-button" onclick="signOut()" id="signOutBtn" style="display:none;">Sign Out</button>
+    </div>
   </div>  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Search Characters or @Usernames" oninput="filterCharacters()">
+    <input type="text" id="searchInput" placeholder="Search Characters" oninput="filterCharacters()">
   </div>  <h2 style="text-align:center">AI Characters</h2>
   <div class="character-grid" id="characterGrid"></div>  <script>
-    const characters = JSON.parse(localStorage.getItem("characters") || "[]");
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (user) {
+      document.getElementById("profileBtn").style.display = "inline-block";
+      document.getElementById("signOutBtn").style.display = "inline-block";
+    } else {
+      document.getElementById("signInBtn").style.display = "inline-block";
+    }
+
+    function signOut() {
+      localStorage.removeItem("loggedInUser");
+      location.reload();
+    }
+
+    // Dummy data fallback
+    const defaultCharacters = [
+      {
+        name: "Lana Lang",
+        image: "https://upload.wikimedia.org/wikipedia/en/5/5f/LanaLang_Smallville.jpg",
+        createdBy: "TazDaz",
+        description: "+7 Lana Lang's personality in Smallville is multifaceted..."
+      }
+    ];
+
+    if (!localStorage.getItem("characters")) {
+      localStorage.setItem("characters", JSON.stringify(defaultCharacters));
+    }
+
+    const characters = JSON.parse(localStorage.getItem("characters"));
     const grid = document.getElementById("characterGrid");
 
     function renderCharacters(filtered = characters) {
@@ -105,46 +132,13 @@
     }
 
     function filterCharacters() {
-  const query = document.getElementById("searchInput").value.toLowerCase();
-  const filtered = characters.filter(char =>
-    char.name.toLowerCase().includes(query)
-  );
-  renderCharacters(filtered);
-}
+      const query = document.getElementById("searchInput").value.toLowerCase();
+      const filtered = characters.filter(char =>
+        char.name.toLowerCase().includes(query)
+      );
+      renderCharacters(filtered);
+    }
 
     renderCharacters();
-  
-
-    function signOut() {
-      localStorage.removeItem("loggedInUser");
-      location.reload();
-    }
-  
-
-    const loggedInUser = localStorage.getItem("loggedInUser");
-    if (loggedInUser) {
-      document.getElementById("signOutBtn").style.display = "inline-block";
-    }
-
-    function signOut() {
-      localStorage.removeItem("loggedInUser");
-      location.reload();
-    }
-  
-
-    const isLoggedIn = localStorage.getItem("loggedInUser");
-    if (isLoggedIn) {
-      document.getElementById("profileBtn").style.display = "inline-block";
-    } else {
-      document.getElementById("signInBtn").style.display = "inline-block";
-    }
-  
-
-    const isLoggedIn = !!localStorage.getItem("loggedInUser");
-    if (isLoggedIn) {
-      document.getElementById("profileBtn").style.display = "inline-block";
-    } else {
-      document.getElementById("signInBtn").style.display = "inline-block";
-    }
   </script></body>
 </html>
