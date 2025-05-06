@@ -16,7 +16,6 @@
         padding: 16px;
         display: inline-block;
         width: 200px;
-        cursor: pointer;
       }
       img {
         width: 160px;
@@ -24,27 +23,36 @@
         object-fit: cover;
         border-radius: 8px;
       }
+      .chat-btn {
+        margin-top: 10px;
+        padding: 8px 16px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
     <h1>AI Character Cards</h1>
 
-    <div class="card" onclick="location.href='chat.html?name=Hailey'">
+    <div class="card">
       <img src="https://akns-images.eonline.com/eol_images/Entire_Site/202241/rs_1024x759-220501115754-1024-chelsea-handler.cm.5122.jpg?fit=around%7C1024:759&output-quality=90&crop=1024:759;center,top" />
       <h2>Hailey Spence</h2>
-      <p>#sweet #smart</p>
+      <button class="chat-btn" onclick="location.href='chat.html?name=Hailey'">Chat Now</button>
     </div>
 
-    <div class="card" onclick="location.href='chat.html?name=Blaze'">
+    <div class="card">
       <img src="https://via.placeholder.com/200" />
       <h2>Blaze</h2>
-      <p>#fiery #bold</p>
+      <button class="chat-btn" onclick="location.href='chat.html?name=Blaze'">Chat Now</button>
     </div>
 
-    <div class="card" onclick="location.href='chat.html?name=Nova'">
+    <div class="card">
       <img src="https://via.placeholder.com/200" />
       <h2>Nova</h2>
-      <p>#chill #mysterious</p>
+      <button class="chat-btn" onclick="location.href='chat.html?name=Nova'">Chat Now</button>
     </div>
 
   </body>
