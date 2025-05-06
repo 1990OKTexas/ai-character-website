@@ -1,150 +1,163 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Create a Character</title>
-    <style>
-      body {
-        font-family: 'Segoe UI', sans-serif;
-        background-color: #f9f9f9;
-        padding: 20px;
-        font-size: 14px;
-        color: #333;
+<head>
+  <title>Create a Character</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+    }
+    .form-container {
+      max-width: 500px;
+      margin: 40px auto;
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 4px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .preview {
+      margin-top: 10px;
+      text-align: center;
+    }
+    .preview img {
+      width: 160px;
+      height: 160px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="form-container">
+    <h2>Create a Character</h2>
+
+    <label>Character's Name:</label>
+    <input type="text" id="charName" />
+
+    <label>Sex:</label>
+    <select id="charSex">
+      <option>Male</option>
+      <option>Female</option>
+      <option>Nonbinary</option>
+      <option>N/A</option>
+    </select>
+
+    <label>Personalities (use hashtags):</label>
+    <input type="text" id="charTags" placeholder="#fun #friendly #chaotic" />
+
+    <label>SFW or NSFW:</label>
+    <select id="charSFW">
+      <option>SFW</option>
+      <option>NSFW</option>
+    </select>
+
+    <label>Description:</label>
+    <textarea id="charDesc" rows="3"></textarea>
+
+    <label>Starter Message:</label>
+    <textarea id="charStarter" rows="2"></textarea>
+
+    <label>Upload Image (URL or File):</label>
+    <input type="text" id="charImageURL" placeholder="https://example.com/image.jpg" />
+    <input type="file" id="charImageFile" accept="image/*" />
+    <div class="preview">
+      <img id="imagePreview" src="https://via.placeholder.com/160?text=Preview" />
+    </div>
+
+    <button onclick="createCharacter()">Create Character</button>
+  </div>
+
+  <script>
+    const loggedUser = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (!loggedUser) {
+      alert("You must be logged in to create a character.");
+      window.location.href = "login.html";
+    }
+
+    const imageFileInput = document.getElementById("charImageFile");
+    const imageURLInput = document.getElementById("charImageURL");
+    const imagePreview = document.getElementById("imagePreview");
+
+    imageFileInput.addEventListener("change", () => {
+      const file = imageFileInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = e => imagePreview.src = e.target.result;
+        reader.readAsDataURL(file);
+        imageURLInput.value = ""; // clear manual URL if file is used
       }
-      h1 {
-        text-align: center;
-        font-size: 20px;
-        margin-bottom: 24px;
+    });
+
+    imageURLInput.addEventListener("input", () => {
+      if (imageURLInput.value) {
+        imagePreview.src = imageURLInput.value;
+        imageFileInput.value = ""; // clear file if URL is typed
       }
-      form {
-        max-width: 360px;
-        margin: auto;
-        background: white;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
-      }
-      label {
-        font-weight: 500;
-        margin-top: 12px;
-        display: block;
-      }
-      input, select, textarea {
-        width: 100%;
-        padding: 8px;
-        margin-top: 4px;
-        margin-bottom: 10px;
-        font-size: 13px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        background-color: #fff;
-      }
-      button {
-        margin-top: 12px;
-        padding: 10px;
-        width: 100%;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-size: 14px;
-        cursor: pointer;
-      }
-      .preview {
-        text-align: center;
-        margin-top: 10px;
-      }
-      .preview img {
-        width: 160px;
-        height: 160px;
-        object-fit: cover;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        background: #eee;
-      }
-    </style>
-  </head>
-  <body>
+    });
 
-    <h1>Create a New AI Character</h1>
+    function createCharacter() {
+      const name = document.getElementById("charName").value.trim();
+      const sex = document.getElementById("charSex").value;
+      const tags = document.getElementById("charTags").value.trim();
+      const sfw = document.getElementById("charSFW").value;
+      const desc = document.getElementById("charDesc").value.trim();
+      const starter = document.getElementById("charStarter").value.trim();
+      const imageURL = imagePreview.src;
 
-    <form onsubmit="handleSubmit(event)">
-      <label>Character's Name</label>
-      <input type="text" id="name" required />
-
-      <label>Sex</label>
-      <select id="sex">
-        <option>Female</option>
-        <option>Male</option>
-        <option>Non-binary</option>
-      </select>
-
-      <label>Personality Tags (use #)</label>
-      <input type="text" id="tags" placeholder="#fun #smart" required />
-
-      <label>Is the Character SFW or NSFW?</label>
-      <select id="sfw">
-        <option>SFW</option>
-        <option>NSFW</option>
-      </select>
-
-      <label>Description</label>
-      <textarea id="description" rows="3" required></textarea>
-
-      <label>Starter Message</label>
-      <textarea id="starter" rows="3" required></textarea>
-
-      <label>Upload Image</label>
-      <input type="file" id="uploadImg" accept="image/*" onchange="previewImage(this)" />
-
-      <label>Or Paste Image URL</label>
-      <input type="text" id="imageUrl" oninput="previewFromUrl(this.value)" placeholder="https://example.com/image.jpg" />
-
-      <div class="preview">
-        <img id="imgPreview" src="" alt="Image Preview" />
-      </div>
-
-      <button type="submit">Create Character</button>
-    </form>
-
-    <script>
-      function previewImage(input) {
-        const preview = document.getElementById("imgPreview");
-        const file = input.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            preview.src = e.target.result;
-            preview.dataset.imageSource = e.target.result;
-          };
-          reader.readAsDataURL(file);
-        }
+      if (!name || !tags || !desc || !starter) {
+        alert("Please fill in all required fields.");
+        return;
       }
 
-      function previewFromUrl(url) {
-        const preview = document.getElementById("imgPreview");
-        preview.src = url;
-        preview.dataset.imageSource = url;
-      }
+      const characters = JSON.parse(localStorage.getItem("characters") || "[]");
 
-      function handleSubmit(event) {
-        event.preventDefault();
+      const character = {
+        name,
+        sex,
+        tags,
+        sfw,
+        description: desc,
+        starter,
+        image: imageURL,
+        createdBy: loggedUser.username
+      };
 
-        const name = document.getElementById("name").value;
-        const sex = document.getElementById("sex").value;
-        const tags = document.getElementById("tags").value;
-        const sfw = document.getElementById("sfw").value;
-        const description = document.getElementById("description").value;
-        const starter = document.getElementById("starter").value;
-        const image = document.getElementById("imgPreview").dataset.imageSource || "";
+      characters.push(character);
+      localStorage.setItem("characters", JSON.stringify(characters));
 
-        const character = { name, sex, tags, sfw, description, starter, image };
+      alert("Character created!");
+      window.location.href = "index.html";
+    }
+  </script>
 
-        const existing = JSON.parse(localStorage.getItem("characters") || "[]");
-        existing.push(character);
-        localStorage.setItem("characters", JSON.stringify(existing));
-
-        window.location.href = "index.html";
-      }
-    </script>
-  </body>
+</body>
 </html>
