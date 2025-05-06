@@ -6,303 +6,178 @@
     body {
       font-family: sans-serif;
       margin: 0;
-      padding: 20px;
-      background-color: #f4f4f4;
+      background: #f2f2f2;
     }
-    .container {
-      max-width: 500px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 6px rgba(0,0,0,0.1);
-    }
-    .home-btn {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      background-color: #6c757d;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 13px;
-      z-index: 1001;
-    }
-    .character-img {
-      display: block;
-      margin: 0 auto 10px;
-      width: 160px;
-      height: 160px;
-      border-radius: 8px;
-      object-fit: cover;
-      border: 1px solid #ccc;
-    }
-    #charName {
+    .chat-header {
       text-align: center;
-      font-size: 18px;
-      margin: 10px 0 0;
+      padding: 16px;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
     }
-    .status-created {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      align-items: center;
-      margin-top: 6px;
-      font-size: 13px;
-    }
-    .status {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 13px;
-      color: white;
-      background-color: #28a745;
-    }
-    .createdBy {
-      color: #555;
-    }
-    .createdBy a {
-      text-decoration: none;
-      color: #007bff;
+    .chat-header img {
+      width: 100px;
+      height: 100px;
+      border-radius: 16px;
+      object-fit: cover;
     }
     .description {
-      text-align: center;
-      font-size: 12px;
-      color: #555;
-      margin: 10px 0 20px;
-    }
-    .chat-area {
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      max-height: 300px;
-      overflow-y: scroll;
-      padding: 10px;
-      margin-bottom: 10px;
-      background: #fefefe;
-    }
-    .chat-area div {
-      font-size: 15px;
-      line-height: 1.5;
-      margin-bottom: 8px;
-    }
-    #messageInput {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
       font-size: 14px;
+      color: #555;
+      margin-top: 8px;
     }
-    .chat-controls {
-      display: flex;
-      gap: 6px;
+    .online {
+      font-size: 13px;
+      color: green;
       margin-top: 6px;
     }
-    .chat-controls button {
-      padding: 8px 12px;
-      font-size: 14px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
+    .creator {
+      font-size: 13px;
+      color: #333;
     }
-    #sendBtn {
+    .chat-box {
+      max-width: 600px;
+      margin: 20px auto;
+      background: white;
+      padding: 16px;
+      border-radius: 12px;
+      height: 400px;
+      overflow-y: auto;
+    }
+    .message {
+      margin-bottom: 16px;
+      display: flex;
+      align-items: flex-start;
+    }
+    .message img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 8px;
+    }
+    .message.user {
+      flex-direction: row-reverse;
+      text-align: right;
+    }
+    .message.user img {
+      margin-right: 0;
+      margin-left: 8px;
+    }
+    .message p {
+      background: #f1f1f1;
+      padding: 10px 12px;
+      border-radius: 10px;
+      max-width: 80%;
+    }
+    .input-area {
+      max-width: 600px;
+      margin: 10px auto;
+      display: flex;
+      gap: 8px;
+      padding: 0 16px 20px;
+    }
+    .input-area input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .input-area button {
+      padding: 10px 16px;
+      border: none;
       background: #007bff;
       color: white;
-    }
-    #resetBtn {
-      background: #dc3545;
-      color: white;
-    }
-    .locked-message {
-      text-align: center;
-      color: red;
-      font-size: 14px;
-      margin-top: 10px;
+      border-radius: 8px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-  <button class="home-btn" onclick="location.href='index.html'">Go Home</button>
+  <div class="chat-header">
+    <img id="charImage" src="" alt="Character Image">
+    <div class="online">● Online</div>
+    <div class="creator" id="creatorName">Created by: @someone</div>
+    <div class="description"><strong>Description:</strong> <span id="charDesc"></span></div>
+  </div>
 
-  <div class="container">
-    <img id="charImg" class="character-img" src="" alt="Character Image" />
-    <h2 id="charName"></h2>
+  <div class="chat-box" id="chatBox"></div>
 
-    <div class="status-created">
-      <div class="status" id="statusBadge">Online</div>
-      <div class="createdBy">Created By: <a id="creatorLink" href="#">@<span id="createdBy"></span></a></div>
-    </div>
-
-    <div class="description">
-      <strong>Description:</strong> <span id="charDesc">Loading...</span>
-    </div>
-
-    <div class="chat-area" id="chatbox"></div>
-
-    <div id="lockNotice" class="locked-message" style="display:none;">
-      In order to use this feature, please log in.
-    </div>
-
-    <input type="text" id="messageInput" placeholder="Type a message..." disabled />
-    <div class="chat-controls">
-      <button id="sendBtn" onclick="sendMessage()" disabled>Send</button>
-      <button id="resetBtn" onclick="resetConversation()">Start Over</button>
-    </div>
+  <div class="input-area">
+    <input type="text" id="messageInput" placeholder="Type a message...">
+    <button onclick="sendMessage()">Send</button>
+    <button onclick="startOver()">Start Over</button>
   </div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
-    const charName = params.get('name');
+    const charName = params.get("name");
     const characters = JSON.parse(localStorage.getItem("characters") || "[]");
-    const character = characters.find(c => c.name === charName);
     const user = JSON.parse(localStorage.getItem("loggedInUser"));
 
-    const chatbox = document.getElementById("chatbox");
-    const messageInput = document.getElementById("messageInput");
-    const sendBtn = document.getElementById("sendBtn");
-
-    const historyKey = `chat_history_${user?.username}_${charName}`;
-    let chatHistory = [];
-
     if (!user) {
-      document.getElementById("lockNotice").style.display = "block";
-    } else {
-      messageInput.disabled = false;
-      sendBtn.disabled = false;
-      loadChatHistory();
+      document.body.innerHTML = "<p style='text-align:center;padding:20px;'>In order to use this feature, please log in.</p>";
+      throw new Error("User not logged in.");
     }
 
-    if (character) {
-      document.getElementById("charImg").src = character.image;
-      document.getElementById("charName").textContent = character.name;
-      document.getElementById("charDesc").textContent = character.description;
-      document.getElementById("createdBy").textContent = character.createdBy;
-      document.getElementById("creatorLink").href = `profile.html?user=${character.createdBy}`;
+    const character = characters.find(c => c.name === charName);
+    if (!character) {
+      document.body.innerHTML = "<p style='text-align:center;padding:20px;'>Character not found.</p>";
+      throw new Error("Character not found.");
     }
 
-    function scrollToBottom() {
-      chatbox.scrollTop = chatbox.scrollHeight;
-    }
+    document.getElementById("charImage").src = character.image;
+    document.getElementById("charDesc").textContent = character.description;
+    document.getElementById("creatorName").textContent = "Created by: @" + character.createdBy;
 
-    function loadChatHistory() {
-      const saved = JSON.parse(localStorage.getItem(historyKey) || "[]");
-      chatHistory = saved;
+    const chatBox = document.getElementById("chatBox");
+    const input = document.getElementById("messageInput");
 
-      chatHistory.forEach(msg => {
-        if (msg.role === "system") return;
+    const chatKey = `chat_history_${user.username}_${charName}`;
+    const userPic = user.profilePic || "https://via.placeholder.com/32?text=U";
+    const aiPic = character.image || "https://via.placeholder.com/32?text=A";
 
+    let messages = JSON.parse(localStorage.getItem(chatKey) || "[]");
+
+    function renderMessages() {
+      chatBox.innerHTML = "";
+      messages.forEach(m => {
         const div = document.createElement("div");
-        div.innerHTML = `<strong style="color:${msg.role === 'user' ? '#007bff' : '#ff6600'}">${msg.role === 'user' ? user.username : character.name}:</strong> ${msg.content}`;
-        chatbox.appendChild(div);
+        div.className = "message " + (m.role === "user" ? "user" : "ai");
+        div.innerHTML = `
+          <img src="${m.role === "user" ? userPic : aiPic}">
+          <p>${m.content}</p>
+        `;
+        chatBox.appendChild(div);
       });
-
-      scrollToBottom();
+      chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function saveChatHistory() {
-      localStorage.setItem(historyKey, JSON.stringify(chatHistory));
-    }
-
-    function resetConversation() {
-      if (!confirm("Start over and delete the entire conversation?")) return;
-      chatHistory = [];
-      localStorage.removeItem(historyKey);
-      chatbox.innerHTML = "";
-      setupSystemPrompt();
-    }
-
-    function setupSystemPrompt() {
-      const sfwNote = character.sfw === "NSFW"
-        ? "You are allowed to engage in mature or explicit conversations."
-        : "Keep all responses safe-for-work, respectful, and appropriate.";
-
-      const toneHint = character.description.toLowerCase().includes("joker") ? 
-          "Speak like the Joker from Batman—dark humor, chaos, unpredictable tone." :
-          character.description.toLowerCase().includes("yoda") ?
-          "Speak like Yoda from Star Wars—wise and backward phrasing." :
-          character.description.toLowerCase().includes("iron man") ?
-          "Speak like Tony Stark—witty, sarcastic, confident." : 
-          "";
-
-      const systemPrompt = `
-You are ${character.name}, an AI character created for roleplay.
-Description: ${character.description}
-Personality: ${character.tags}
-${sfwNote}
-${toneHint}
-
-Mimic the character's tone, speech style, and vocabulary. Adapt your responses over time and grow more engaging as the chat continues.
-Only respond as ${character.name}.
-      `.trim();
-
-      chatHistory.push({ role: "system", content: systemPrompt });
-
-      // Show starter message
-      if (character.starter) {
-        chatHistory.push({ role: "assistant", content: character.starter });
-        const starterMsg = document.createElement("div");
-        starterMsg.innerHTML = `<strong style="color:#ff6600">${character.name}:</strong> ${character.starter}`;
-        chatbox.appendChild(starterMsg);
-        scrollToBottom();
-      }
-
-      saveChatHistory();
-    }
-
-    if (chatHistory.length === 0 && user) {
-      setupSystemPrompt();
-    }
-
-    async function sendMessage() {
-      const text = messageInput.value.trim();
+    function sendMessage() {
+      const text = input.value.trim();
       if (!text) return;
 
-      const msg = document.createElement("div");
-      msg.innerHTML = `<strong style="color:#007bff">${user.username}:</strong> ${text}`;
-      chatbox.appendChild(msg);
-      scrollToBottom();
-      messageInput.value = "";
+      messages.push({ role: "user", content: text });
+      messages.push({ role: "ai", content: generateReply(text) });
+      localStorage.setItem(chatKey, JSON.stringify(messages));
+      input.value = "";
+      renderMessages();
+    }
 
-      chatHistory.push({ role: "user", content: text });
-      saveChatHistory();
-
-      try {
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer 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"
-          },
-          body: JSON.stringify({
-            model: "llama-3.3-70b-versatile",
-            messages: chatHistory
-          })
-        });
-
-        const data = await response.json();
-        let aiText = "Hmm...";
-        if (data?.choices?.[0]?.message?.content) {
-          aiText = data.choices[0].message.content;
-          chatHistory.push({ role: "assistant", content: aiText });
-          saveChatHistory();
-        } else if (data.error) {
-          aiText = `Error: ${data.error.message}`;
-        }
-
-        const aiReply = document.createElement("div");
-        aiReply.innerHTML = `<strong style="color:#ff6600">${character.name}:</strong> ${aiText}`;
-        chatbox.appendChild(aiReply);
-        scrollToBottom();
-
-      } catch (err) {
-        const fail = document.createElement("div");
-        fail.innerHTML = `<strong style="color:red">${character.name}:</strong> Failed to contact AI: ${err.message}`;
-        chatbox.appendChild(fail);
-        scrollToBottom();
+    function startOver() {
+      if (confirm("Start this chat over?")) {
+        messages = [];
+        localStorage.setItem(chatKey, JSON.stringify([]));
+        renderMessages();
       }
     }
+
+    function generateReply(text) {
+      return "Hmm..."; // You can connect this to Groq/OpenRouter later
+    }
+
+    renderMessages();
   </script>
+
 </body>
 </html>
