@@ -79,6 +79,35 @@
       font-size: 14px;
       margin-top: 10px;
     }
+    .char-card {
+      display: inline-block;
+      width: 200px;
+      background: white;
+      margin: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .char-card img {
+      width: 160px;
+      height: 160px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    .char-card button {
+      margin: 6px 4px 0 4px;
+      padding: 6px 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .delete-btn {
+      background: #dc3545;
+    }
   </style>
 </head>
 <body>
@@ -108,6 +137,11 @@
     <button onclick="saveProfile()">Save</button>
   </div>
 
+  <div class="char-section">
+    <h3 style="text-align:center;">My Characters</h3>
+    <div id="userCharacters"></div>
+  </div>
+
   <script>
     const user = JSON.parse(localStorage.getItem("loggedInUser"));
     const allUsers = JSON.parse(localStorage.getItem("users") || "[]");
@@ -120,6 +154,27 @@
     document.getElementById("displayName").textContent = "@" + user.username;
     document.getElementById("signupDate").textContent = "Signed up on: " + new Date(user.signupDate || Date.now()).toLocaleDateString();
     document.getElementById("profilePic").src = user.profilePic || "https://via.placeholder.com/160?text=User";
+
+    const characters = JSON.parse(localStorage.getItem("characters") || "[]");
+    const myCharacters = characters.filter(c => c.createdBy === user.username);
+    const container = document.getElementById("userCharacters");
+
+    if (myCharacters.length === 0) {
+      container.innerHTML = "<p style='text-align:center;'>You haven’t created any characters yet.</p>";
+    } else {
+      myCharacters.forEach(char => {
+        const div = document.createElement("div");
+        div.className = "char-card";
+        div.innerHTML = `
+          <img src="${char.image}" />
+          <h4>${char.name}</h4>
+          <button onclick="location.href='chat.html?name=${encodeURIComponent(char.name)}'">Chat Now</button>
+          <button onclick="editCharacter('${char.name}')">Edit</button>
+          <button class="delete-btn" onclick="deleteCharacter('${char.name}')">Delete</button>
+        `;
+        container.appendChild(div);
+      });
+    }
 
     function showEditForm() {
       document.getElementById("editForm").style.display = "block";
@@ -162,7 +217,28 @@
       localStorage.setItem("users", JSON.stringify(updatedUsers));
       localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
 
-      alert("Profile updated!");
+      const characters = JSON.parse(localStorage.getItem("characters") || "[]");
+      const synced = characters.map(c => {
+        if (c.createdBy === user.username) {
+          return { ...c, createdBy: newUser };
+        }
+        return c;
+      });
+      localStorage.setItem("characters", JSON.stringify(synced));
+
+      alert("Profile updated and synced!");
+      location.reload();
+    }
+
+    function editCharacter(name) {
+      location.href = `edit.html?name=${encodeURIComponent(name)}`;
+    }
+
+    function deleteCharacter(name) {
+      if (!confirm(`Delete ${name}? This cannot be undone.`)) return;
+      const characters = JSON.parse(localStorage.getItem("characters") || "[]");
+      const updated = characters.filter(c => c.name !== name);
+      localStorage.setItem("characters", JSON.stringify(updated));
       location.reload();
     }
   </script>
