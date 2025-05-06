@@ -225,6 +225,16 @@ Only respond as ${character.name}.
       `.trim();
 
       chatHistory.push({ role: "system", content: systemPrompt });
+
+// Insert starter message as first assistant reply
+if (character.starter) {
+  chatHistory.push({ role: "assistant", content: character.starter });
+
+  const starterMsg = document.createElement("div");
+  starterMsg.innerHTML = `<strong style="color:#ff6600">${character.name}:</strong> ${character.starter}`;
+  chatbox.appendChild(starterMsg);
+}
+      
     }
 
     if (chatHistory.length === 0 && user) {
