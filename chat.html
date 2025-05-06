@@ -184,6 +184,8 @@ try {
   });
 
   const data = await res.json();
+  console.log("Groq raw response:", data);
+alert(JSON.stringify(data));
   const reply = data.choices?.[0]?.message?.content || "Hmm...";
   messages.push({ role: "ai", content: reply });
   localStorage.setItem(chatKey, JSON.stringify(messages));
