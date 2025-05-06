@@ -183,10 +183,20 @@ try {
     body: JSON.stringify(body)
   });
 
-  const data = await res.json();
-  console.log("Groq raw response:", data);
-alert(JSON.stringify(data));
-  const reply = data.choices?.[0]?.message?.content || "Hmm...";
+  const text = await res.text();
+console.log("Groq raw response:", text);
+alert(text);
+
+let data;
+try {
+  data = JSON.parse(text);
+} catch {
+  messages.push({ role: "ai", content: "Invalid JSON from Groq." });
+  renderMessages();
+  return;
+}
+
+const reply = data.choices?.[0]?.message?.content || data.error?.message || "Hmm...";
   messages.push({ role: "ai", content: reply });
   localStorage.setItem(chatKey, JSON.stringify(messages));
   renderMessages();
