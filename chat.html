@@ -26,6 +26,11 @@
         object-fit: cover;
         border: 1px solid #ccc;
       }
+      #charName {
+        text-align: center;
+        font-size: 18px;
+        margin: 10px 0 5px;
+      }
       .description {
         text-align: center;
         font-size: 12px;
@@ -40,21 +45,6 @@
         padding: 10px;
         margin-bottom: 10px;
         background: #fefefe;
-      }
-      .input-area {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 10px;
-      }
-      input[type="text"], input[type="color"] {
-        padding: 6px;
-        border-radius: 6px;
-        border: 1px solid #ccc;
-        flex: 1;
-      }
-      .chat-controls {
-        text-align: center;
-        margin-bottom: 16px;
       }
       #messageInput {
         width: 100%;
@@ -72,20 +62,66 @@
         border-radius: 6px;
         cursor: pointer;
       }
+
+      /* Popup Modal */
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      .modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 300px;
+        text-align: center;
+      }
+      .modal-content input,
+      .modal-content button {
+        width: 100%;
+        margin-top: 10px;
+        padding: 8px;
+        font-size: 14px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+      }
+      .modal-content input[type="color"] {
+        padding: 2px;
+        height: 40px;
+      }
+      .modal-content button {
+        background: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
+    <!-- Modal for Name/Color -->
+    <div class="modal" id="setupModal">
+      <div class="modal-content">
+        <h3>Enter Your Chat Name</h3>
+        <input type="text" id="username" placeholder="Your name" />
+        <h4>Pick your color</h4>
+        <input type="color" id="color" value="#007bff" />
+        <button onclick="startChat()">Chat Now</button>
+      </div>
+    </div>
+
+    <!-- Main Chat Area -->
     <div class="container">
       <img id="charImg" class="character-img" src="" alt="Character Image" />
+      <h2 id="charName"></h2>
       <div class="description" id="charDesc">Loading description...</div>
-
-      <div class="chat-controls" id="setupForm">
-        <div class="input-area">
-          <input type="text" id="username" placeholder="Your name" />
-          <input type="color" id="color" value="#007bff" />
-        </div>
-        <button id="startBtn">Chat Now</button>
-      </div>
 
       <div class="chat-area" id="chatbox"></div>
 
@@ -101,6 +137,7 @@
 
       if (character) {
         document.getElementById("charImg").src = character.image;
+        document.getElementById("charName").textContent = character.name;
         document.getElementById("charDesc").textContent = character.description;
       }
 
@@ -108,7 +145,7 @@
       let userColor = "#007bff";
       let locked = true;
 
-      document.getElementById("startBtn").onclick = function () {
+      function startChat() {
         const nameInput = document.getElementById("username").value.trim();
         const colorInput = document.getElementById("color").value;
         if (!nameInput) {
@@ -122,10 +159,8 @@
 
         document.getElementById("messageInput").disabled = false;
         document.getElementById("sendBtn").disabled = false;
-        document.getElementById("username").disabled = true;
-        document.getElementById("color").disabled = true;
-        document.getElementById("startBtn").disabled = true;
-      };
+        document.getElementById("setupModal").style.display = "none";
+      }
 
       function sendMessage() {
         if (locked) return;
