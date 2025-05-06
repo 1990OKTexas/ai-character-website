@@ -190,31 +190,43 @@
         chatbox.scrollTop = chatbox.scrollHeight;
         input.value = "";
 
-        // AI reply from Groq + Mixtral
-const systemPrompt = `You are ${character.name}, a charming AI character. Answer like you're having a real conversation.`;
+        const systemPrompt = `You are ${character.name}, a charming AI character. Answer like you're having a real conversation.`;
 
-const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer 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" // Replace with your key
-          },
-          body: JSON.stringify({
-            model: "mixtral-8x7b-32768",
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: text }
-            ]
-          })
-        });
+        try {
+          const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer YOUR_GROQ_API_KEY" // Replace with your key
+            },
+            body: JSON.stringify({
+              model: "mixtral-8x7b-32768",
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: text }
+              ]
+            })
+          });
 
-        const data = await response.json();
-        const aiText = data.choices?.[0]?.message?.content || "Hmm...";
+          const data = await response.json();
 
-        const aiReply = document.createElement("div");
-        aiReply.innerHTML = `<strong style="color:#ff6600">${character.name}:</strong> ${aiText}`;
-        chatbox.appendChild(aiReply);
-        chatbox.scrollTop = chatbox.scrollHeight;
+          let aiText = "Hmm...";
+          if (data && data.choices && data.choices[0] && data.choices[0].message) {
+            aiText = data.choices[0].message.content;
+          } else if (data.error) {
+            aiText = `Error: ${data.error.message}`;
+          }
+
+          const aiReply = document.createElement("div");
+          aiReply.innerHTML = `<strong style="color:#ff6600">${character.name}:</strong> ${aiText}`;
+          chatbox.appendChild(aiReply);
+          chatbox.scrollTop = chatbox.scrollHeight;
+
+        } catch (err) {
+          const fail = document.createElement("div");
+          fail.innerHTML = `<strong style="color:red">${character.name}:</strong> Failed to contact AI: ${err.message}`;
+          chatbox.appendChild(fail);
+        }
       }
     </script>
   </body>
