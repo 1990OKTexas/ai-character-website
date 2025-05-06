@@ -86,7 +86,9 @@
     <div class="top-bar">
       <div>
         <button class="create-btn" onclick="goToCreate()">Create A Character</button>
-        <button class="user-btn" onclick="location.href='login.html'">Sign In / Sign Up</button>
+        <div id="userArea">
+          <button class="user-btn" onclick="location.href='login.html'">Sign In / Sign Up</button>
+        </div>
       </div>
       <button class="admin-btn" onclick="location.href='admin.html'">Admin Login</button>
     </div>
@@ -126,10 +128,14 @@
         location.reload();
       }
 
-      // Show logout button if user is logged in
-      const isLoggedIn = localStorage.getItem("loggedInUser");
-      if (isLoggedIn) {
-        document.getElementById("logoutBtn").style.display = "block";
+      // Login check
+      const loggedIn = JSON.parse(localStorage.getItem("loggedInUser"));
+      const userArea = document.getElementById("userArea");
+      const logoutBtn = document.getElementById("logoutBtn");
+
+      if (loggedIn) {
+        userArea.innerHTML = `<button class="user-btn" onclick="location.href='profile.html'">Go to Profile</button>`;
+        logoutBtn.style.display = "block";
       }
     </script>
 
