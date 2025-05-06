@@ -123,7 +123,9 @@
 
     <div class="status-created">
       <div class="status" id="statusBadge">Online</div>
-      <div class="createdBy">Created By: @<span id="createdBy"></span></div>
+      <div class="createdBy">
+  Created By: <a id="creatorLink" href="#" style="color:#007bff; text-decoration:none;">@<span id="createdBy"></span></a>
+      </div>
     </div>
 
     <div class="description">
@@ -170,6 +172,7 @@
       document.getElementById("charName").textContent = character.name;
       document.getElementById("charDesc").textContent = character.description;
       document.getElementById("createdBy").textContent = character.createdBy;
+      document.getElementById("creatorLink").href = `profile.html?user=${character.createdBy}`;
     }
 
     function loadChatHistory() {
