@@ -135,6 +135,14 @@
     <input type="text" id="editPicURL" placeholder="Profile Picture URL">
     <input type="file" id="editPicFile" accept="image/*">
     <img id="editPreview" src="" style="width:100px;height:100px;border-radius:50%;margin-top:10px;">
+    
+    <p style="margin-top:20px;"><a href="#" onclick="togglePasswordChange()">Create new password</a></p>
+    <div id="passwordSection" style="display:none;">
+      <input type="password" id="oldPass" placeholder="Old Password">
+      <input type="password" id="newPass" placeholder="New Password">
+      <input type="password" id="confirmPass" placeholder="Re-enter New Password">
+    </div>
+
     <button onclick="saveProfile()">Save</button>
   </div>
 
@@ -207,6 +215,11 @@
       document.getElementById("editPreview").src = user.profilePic || "https://via.placeholder.com/100";
     }
 
+    function togglePasswordChange() {
+      const section = document.getElementById("passwordSection");
+      section.style.display = section.style.display === "none" ? "block" : "none";
+    }
+
     document.getElementById("editPicFile").addEventListener("change", e => {
       const file = e.target.files[0];
       if (file) {
@@ -232,23 +245,48 @@
       const newSex = document.getElementById("editSex").value;
       const newPic = document.getElementById("editPreview").src;
 
+      const oldPassInput = document.getElementById("oldPass");
+      const newPassInput = document.getElementById("newPass");
+      const confirmPassInput = document.getElementById("confirmPass");
+
       if (!newUser) return alert("Username is required.");
 
-      const updatedUser = { ...user, nickname: newNick, username: newUser, sex: newSex, profilePic: newPic };
+      let finalPassword = user.password;
+
+      if (oldPassInput && oldPassInput.value) {
+        if (oldPassInput.value !== user.password) {
+          alert("Old password is incorrect.");
+          return;
+        }
+        if (!newPassInput.value || !confirmPassInput.value) {
+          alert("Please enter and confirm your new password.");
+          return;
+        }
+        if (newPassInput.value !== confirmPassInput.value) {
+          alert("New passwords do not match.");
+          return;
+        }
+        finalPassword = newPassInput.value;
+      }
+
+      const updatedUser = {
+        ...user,
+        nickname: newNick,
+        username: newUser,
+        sex: newSex,
+        profilePic: newPic,
+        password: finalPassword
+      };
+
       const updatedUsers = allUsers.map(u => u.username === user.username ? updatedUser : u);
       localStorage.setItem("users", JSON.stringify(updatedUsers));
       localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
 
       const characters = JSON.parse(localStorage.getItem("characters") || "[]");
-      const synced = characters.map(c => {
-        if (c.createdBy === user.username) {
-          return { ...c, createdBy: newUser };
-        }
-        return c;
-      });
+      const synced = characters.map(c => c.createdBy === user.username ? { ...c, createdBy: newUser } : c);
       localStorage.setItem("characters", JSON.stringify(synced));
 
-      alert("Profile updated and synced!");
+      alert("Profile updated!");
       location.reload();
     }
 
