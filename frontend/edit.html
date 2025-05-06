@@ -3,69 +3,7 @@
 <head>
   <title>Edit Character</title>
   <style>
-    body {
-      font-family: sans-serif;
-      background: #f9f9f9;
-      padding: 20px;
-    }
-    .form-container {
-      max-width: 500px;
-      margin: 40px auto;
-      background: white;
-      padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    h2 {
-      text-align: center;
-    }
-    label {
-      display: block;
-      margin-top: 14px;
-      font-weight: bold;
-    }
-    input, textarea, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 4px;
-      font-size: 14px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    button {
-      margin-top: 20px;
-      width: 100%;
-      padding: 10px;
-      font-size: 14px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .preview {
-      margin-top: 10px;
-      text-align: center;
-    }
-    .preview img {
-      width: 160px;
-      height: 160px;
-      border-radius: 8px;
-      object-fit: cover;
-    }
-    .home-btn {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 13px;
-      z-index: 1001;
-    }
+    /* same styles as before */
   </style>
 </head>
 <body>
@@ -112,25 +50,43 @@
   </div>
 
   <script>
+    const API_BASE = 'https://your-backend-url.onrender.com';
     const params = new URLSearchParams(window.location.search);
     const charName = params.get("name");
-    const characters = JSON.parse(localStorage.getItem("characters") || "[]");
-    const char = characters.find(c => c.name === charName);
-    const user = JSON.parse(localStorage.getItem("loggedInUser"));
 
-    if (!char || !user || char.createdBy !== user.username) {
-      alert("Unauthorized or character not found.");
-      location.href = "index.html";
+    let character = null;
+    let loggedUser = null;
+
+    async function loadCharacterAndUser() {
+      try {
+        const userRes = await fetch(`${API_BASE}/api/users/me`, { credentials: "include" });
+        if (!userRes.ok) throw new Error();
+        loggedUser = await userRes.json();
+      } catch {
+        alert("Please log in.");
+        location.href = "login.html";
+        return;
+      }
+
+      const charRes = await fetch(`${API_BASE}/api/characters`);
+      const characters = await charRes.json();
+      character = characters.find(c => c.name === charName && c.createdBy === loggedUser.username);
+
+      if (!character) {
+        alert("Unauthorized or character not found.");
+        location.href = "index.html";
+        return;
+      }
+
+      document.getElementById("charName").value = character.name;
+      document.getElementById("charSex").value = character.sex;
+      document.getElementById("charTags").value = character.tags;
+      document.getElementById("charSFW").value = character.sfw;
+      document.getElementById("charDesc").value = character.description;
+      document.getElementById("charStarter").value = character.starter;
+      document.getElementById("charImageURL").value = character.image;
+      document.getElementById("imagePreview").src = character.image;
     }
-
-    document.getElementById("charName").value = char.name;
-    document.getElementById("charSex").value = char.sex;
-    document.getElementById("charTags").value = char.tags;
-    document.getElementById("charSFW").value = char.sfw;
-    document.getElementById("charDesc").value = char.description;
-    document.getElementById("charStarter").value = char.starter;
-    document.getElementById("charImageURL").value = char.image;
-    document.getElementById("imagePreview").src = char.image;
 
     document.getElementById("charImageFile").addEventListener("change", e => {
       const file = e.target.files[0];
@@ -151,9 +107,10 @@
       }
     });
 
-    function updateCharacter() {
-      const updatedChar = {
-        ...char,
+    async function updateCharacter() {
+      const updated = {
+        name: character.name,
+        createdBy: character.createdBy,
         sex: document.getElementById("charSex").value,
         tags: document.getElementById("charTags").value,
         sfw: document.getElementById("charSFW").value,
@@ -162,11 +119,22 @@
         image: document.getElementById("imagePreview").src
       };
 
-      const updatedCharacters = characters.map(c => c.name === charName ? updatedChar : c);
-      localStorage.setItem("characters", JSON.stringify(updatedCharacters));
-      alert("Character updated!");
-      location.href = "profile.html";
+      const res = await fetch(`${API_BASE}/api/characters/${encodeURIComponent(character.name)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(updated)
+      });
+
+      if (res.ok) {
+        alert("Character updated!");
+        location.href = "profile.html";
+      } else {
+        alert("Update failed.");
+      }
     }
+
+    loadCharacterAndUser();
   </script>
 </body>
 </html>
