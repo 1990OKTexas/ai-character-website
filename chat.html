@@ -63,17 +63,29 @@
     .createdBy {
       color: #555;
     }
+    .createdBy a {
+      text-decoration: none;
+      color: #007bff;
+    }
     .description {
       text-align: center;
       font-size: 12px;
       color: #555;
       margin: 10px 0 20px;
     }
+    .chat-area {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      max-height: 300px;
+      overflow-y: scroll;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #fefefe;
+    }
     .chat-area div {
-  font-size: 15px;
-  line-height: 1.5;
-  margin-bottom: 8px;
-  background: #fefefe;
+      font-size: 15px;
+      line-height: 1.5;
+      margin-bottom: 8px;
     }
     #messageInput {
       width: 100%;
@@ -120,9 +132,7 @@
 
     <div class="status-created">
       <div class="status" id="statusBadge">Online</div>
-      <div class="createdBy">
-  Created By: <a id="creatorLink" href="#" style="color:#007bff; text-decoration:none;">@<span id="createdBy"></span></a>
-      </div>
+      <div class="createdBy">Created By: <a id="creatorLink" href="#">@<span id="createdBy"></span></a></div>
     </div>
 
     <div class="description">
@@ -172,19 +182,23 @@
       document.getElementById("creatorLink").href = `profile.html?user=${character.createdBy}`;
     }
 
+    function scrollToBottom() {
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
     function loadChatHistory() {
       const saved = JSON.parse(localStorage.getItem(historyKey) || "[]");
       chatHistory = saved;
 
       chatHistory.forEach(msg => {
-  if (msg.role === "system") return; // Skip system messages
+        if (msg.role === "system") return;
 
-  const div = document.createElement("div");
-  div.innerHTML = `<strong style="color:${msg.role === 'user' ? '#007bff' : '#ff6600'}">${msg.role === 'user' ? user.username : character.name}:</strong> ${msg.content}`;
-  chatbox.appendChild(div);
-});
+        const div = document.createElement("div");
+        div.innerHTML = `<strong style="color:${msg.role === 'user' ? '#007bff' : '#ff6600'}">${msg.role === 'user' ? user.username : character.name}:</strong> ${msg.content}`;
+        chatbox.appendChild(div);
+      });
 
-      chatbox.scrollTop = chatbox.scrollHeight;
+      scrollToBottom();
     }
 
     function saveChatHistory() {
@@ -225,20 +239,20 @@ Only respond as ${character.name}.
 
       chatHistory.push({ role: "system", content: systemPrompt });
 
-// Insert starter message as first assistant reply
-if (character.starter) {
-  chatHistory.push({ role: "assistant", content: character.starter });
+      // Show starter message
+      if (character.starter) {
+        chatHistory.push({ role: "assistant", content: character.starter });
+        const starterMsg = document.createElement("div");
+        starterMsg.innerHTML = `<strong style="color:#ff6600">${character.name}:</strong> ${character.starter}`;
+        chatbox.appendChild(starterMsg);
+        scrollToBottom();
+      }
 
-  const starterMsg = document.createElement("div");
-  starterMsg.innerHTML = `<strong style="color:#ff6600">${character.name}:</strong> ${character.starter}`;
-  chatbox.appendChild(starterMsg);
-}
-      
+      saveChatHistory();
     }
 
     if (chatHistory.length === 0 && user) {
       setupSystemPrompt();
-      saveChatHistory();
     }
 
     async function sendMessage() {
@@ -248,7 +262,7 @@ if (character.starter) {
       const msg = document.createElement("div");
       msg.innerHTML = `<strong style="color:#007bff">${user.username}:</strong> ${text}`;
       chatbox.appendChild(msg);
-      chatbox.scrollTop = chatbox.scrollHeight;
+      scrollToBottom();
       messageInput.value = "";
 
       chatHistory.push({ role: "user", content: text });
@@ -280,12 +294,13 @@ if (character.starter) {
         const aiReply = document.createElement("div");
         aiReply.innerHTML = `<strong style="color:#ff6600">${character.name}:</strong> ${aiText}`;
         chatbox.appendChild(aiReply);
-        chatbox.scrollTop = chatbox.scrollHeight;
+        scrollToBottom();
 
       } catch (err) {
         const fail = document.createElement("div");
         fail.innerHTML = `<strong style="color:red">${character.name}:</strong> Failed to contact AI: ${err.message}`;
         chatbox.appendChild(fail);
+        scrollToBottom();
       }
     }
   </script>
