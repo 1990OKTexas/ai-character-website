@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Create a Character</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+      }
+      form {
+        max-width: 400px;
+        margin: auto;
+      }
+      label {
+        display: block;
+        margin: 10px 0 4px;
+      }
+      input, select, textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+      }
+      button {
+        margin-top: 16px;
+        padding: 10px;
+        width: 100%;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Create a New AI Character</h1>
+
+    <form onsubmit="handleSubmit(event)">
+      <label>Character's Name:</label>
+      <input type="text" id="name" required />
+
+      <label>What sex is the character:</label>
+      <select id="sex">
+        <option>Female</option>
+        <option>Male</option>
+        <option>Non-binary</option>
+      </select>
+
+      <label>Personalities: (Use #)</label>
+      <input type="text" id="tags" placeholder="#fun #smart" required />
+
+      <label>Is the character SFW or NSFW:</label>
+      <select id="sfw">
+        <option>SFW</option>
+        <option>NSFW</option>
+      </select>
+
+      <label>Description of the Character:</label>
+      <textarea id="description" rows="3" required></textarea>
+
+      <label>The starter of the Character:</label>
+      <textarea id="starter" rows="3" required></textarea>
+
+      <button type="submit">Create Character</button>
+    </form>
+
+    <script>
+      function handleSubmit(event) {
+        event.preventDefault();
+        alert("Character submitted! (We'll store it in a file or database soon.)");
+        // Here’s where backend storage would go later
+      }
+    </script>
+  </body>
+</html>
