@@ -1,170 +1,205 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html>
 <head>
   <title>Chat</title>
   <style>
-    body { font-family: sans-serif; margin: 0; background: #f2f2f2; }
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      background: #f2f2f2;
+    }
     .chat-header {
-      text-align: center; padding: 16px; background: #fff;
+      width: 90%;
+      max-width: 500px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 16px;
+      background: #fff;
       box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      border-radius: 8px;
     }
     .chat-header img {
-      width: 100px; height: 100px; border-radius: 16px; object-fit: cover;
+      width: 100px;
+      height: 100px;
+      border-radius: 16px;
+      object-fit: cover;
     }
-    .description { font-size: 14px; color: #555; margin-top: 8px; }
-    .online { font-size: 13px; color: green; margin-top: 6px; }
-    .creator { font-size: 13px; color: #333; }
+    .description {
+      font-size: 14px;
+      color: #555;
+      margin-top: 8px;
+    }
+    .online {
+      font-size: 13px;
+      color: green;
+      margin-top: 6px;
+    }
+    .creator {
+      font-size: 13px;
+      color: #333;
+    }
     .chat-box {
-      max-width: 600px; margin: 20px auto; background: white;
-      padding: 16px; border-radius: 12px; height: 400px;
+      max-width: 500px;
+      margin: 20px auto;
+      background: white;
+      padding: 16px;
+      border-radius: 12px;
+      height: 400px;
       overflow-y: auto;
     }
     .message {
-      margin-bottom: 16px; display: flex; align-items: flex-start;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: flex-start;
     }
     .message img {
-      width: 32px; height: 32px; border-radius: 50%;
-      object-fit: cover; margin-right: 8px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 8px;
     }
     .message.user {
-      flex-direction: row-reverse; text-align: right;
+      flex-direction: row-reverse;
+      text-align: right;
     }
     .message.user img {
-      margin-right: 0; margin-left: 8px;
+      margin-right: 0;
+      margin-left: 8px;
     }
     .message p {
-      background: #f1f1f1; padding: 10px 12px; border-radius: 10px;
+      background: #f1f1f1;
+      padding: 10px 12px;
+      border-radius: 10px;
       max-width: 80%;
     }
     .input-area {
-      max-width: 600px; margin: 10px auto;
-      display: flex; gap: 8px; padding: 0 16px 20px;
+      max-width: 500px;
+      margin: 10px auto;
+      display: flex;
+      gap: 8px;
+      padding: 0 16px 20px;
     }
     .input-area input {
-      flex: 1; padding: 10px; border-radius: 8px;
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
       border: 1px solid #ccc;
     }
     .input-area button {
-      padding: 10px 16px; border: none;
-      background: #007bff; color: white;
-      border-radius: 8px; cursor: pointer;
+      padding: 10px 16px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-
   <div class="chat-header">
     <img id="charImage" src="" alt="Character Image">
     <div class="online">● Online</div>
     <div class="creator" id="creatorName">Created by: @someone</div>
     <div class="description"><strong>Description:</strong> <span id="charDesc"></span></div>
   </div>
-
   <div class="chat-box" id="chatBox"></div>
-
   <div class="input-area">
     <input type="text" id="messageInput" placeholder="Type a message...">
     <button onclick="sendMessage()">Send</button>
     <button onclick="startOver()">Start Over</button>
   </div>
-
   <script>
     const params = new URLSearchParams(window.location.search);
     const charName = params.get("name");
     const characters = JSON.parse(localStorage.getItem("characters") || "[]");
-    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));if (!user) {
+  document.body.innerHTML = "<p style='text-align:center;padding:20px;'>In order to use this feature, please log in.</p>";
+  throw new Error("User not logged in.");
+}
 
-    if (!user) {
-      document.body.innerHTML = "<p style='text-align:center;padding:20px;'>In order to use this feature, please log in.</p>";
-      throw new Error("User not logged in.");
-    }
+const character = characters.find(c => c.name === charName);
+if (!character) {
+  document.body.innerHTML = "<p style='text-align:center;padding:20px;'>Character not found.</p>";
+  throw new Error("Character not found.");
+}
 
-    const character = characters.find(c => c.name === charName);
-    if (!character) {
-      document.body.innerHTML = "<p style='text-align:center;padding:20px;'>Character not found.</p>";
-      throw new Error("Character not found.");
-    }
+document.getElementById("charImage").src = character.image;
+document.getElementById("charDesc").textContent = character.description;
+document.getElementById("creatorName").textContent = "Created by: @" + character.createdBy;
 
-    document.getElementById("charImage").src = character.image;
-    document.getElementById("charDesc").textContent = character.description;
-    document.getElementById("creatorName").textContent = "Created by: @" + character.createdBy;
+const chatBox = document.getElementById("chatBox");
+const input = document.getElementById("messageInput");
+const chatKey = `chat_history_${user.username}_${charName}`;
+const userPic = user.profilePic || "https://via.placeholder.com/32?text=U";
+const aiPic = character.image || "https://via.placeholder.com/32?text=A";
+const apiKey = localStorage.getItem("groq_api_key");
 
-    const chatBox = document.getElementById("chatBox");
-    const input = document.getElementById("messageInput");
-    const chatKey = `chat_history_${user.username}_${charName}`;
-    const userPic = user.profilePic || "https://via.placeholder.com/32?text=U";
-    const aiPic = character.image || "https://via.placeholder.com/32?text=A";
-    const apiKey = localStorage.getItem("groq_api_key"); // Fixed here!
+let messages = JSON.parse(localStorage.getItem(chatKey) || "[]");
 
-    let messages = JSON.parse(localStorage.getItem(chatKey) || "[]");
+function renderMessages() {
+  chatBox.innerHTML = "";
+  messages.forEach(m => {
+    const div = document.createElement("div");
+    div.className = "message " + (m.role === "user" ? "user" : "ai");
+    div.innerHTML = `
+      <img src="${m.role === "user" ? userPic : aiPic}">
+      <p>${m.content}</p>
+    `;
+    chatBox.appendChild(div);
+  });
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
 
-    function renderMessages() {
-      chatBox.innerHTML = "";
-      messages.forEach(m => {
-        const div = document.createElement("div");
-        div.className = "message " + (m.role === "user" ? "user" : "ai");
-        div.innerHTML = `
-          <img src="${m.role === "user" ? userPic : aiPic}">
-          <p>${m.content}</p>
-        `;
-        chatBox.appendChild(div);
-      });
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
+async function sendMessage() {
+  const text = input.value.trim();
+  if (!text) return;
 
-    async function sendMessage() {
-      const text = input.value.trim();
-      if (!text) return;
+  messages.push({ role: "user", content: text });
+  renderMessages();
+  input.value = "";
 
-      messages.push({ role: "user", content: text });
-      renderMessages();
-      input.value = "";
+  const systemPrompt = `You are ${character.name}, an AI with the following traits:
 
-      const systemPrompt = `You are ${character.name}, an AI with the following traits:
-- Description: ${character.description}
-- Personality: ${character.personalities}
-- This chat is marked as ${character.sfwOrNsfw}
-Speak in a way that matches your personality and grow more natural the longer the conversation continues.`;
+Description: ${character.description}
 
-      const body = {
-        model: "llama3-70b-8192",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages
-        ]
-      };
+Personality: ${character.personalities}
 
-      try {
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + apiKey
-          },
-          body: JSON.stringify(body)
-        });
+This chat is marked as ${character.sfwOrNsfw} Keep replies short, friendly, and natural. Use brief sentences.`;
 
-        const data = await res.json();
-        const reply = data.choices?.[0]?.message?.content || "Hmm...";
-        messages.push({ role: "ai", content: reply });
-        localStorage.setItem(chatKey, JSON.stringify(messages));
-        renderMessages();
-      } catch (err) {
-        messages.push({ role: "ai", content: "Sorry, something went wrong talking to the server." });
-        renderMessages();
-      }
-    }
+const body = {
+  model: "llama3-70b-8192",
+  messages: [
+    { role: "system", content: systemPrompt },
+    ...messages
+  ]
+};
 
-    function startOver() {
-      if (confirm("Start this chat over?")) {
-        messages = [];
-        localStorage.setItem(chatKey, JSON.stringify([]));
-        renderMessages();
-      }
-    }
+try {
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + apiKey
+    },
+    body: JSON.stringify(body)
+  });
 
-    renderMessages();
-  </script>
+  const data = await res.json();
+  const reply = data.choices?.[0]?.message?.content || "Hmm...";
+  messages.push({ role: "ai", content: reply });
+  localStorage.setItem(chatKey, JSON.stringify(messages));
+  renderMessages();
+} catch (err) {
+  messages.push({ role: "ai", content: "Sorry, something went wrong." });
+  renderMessages();
+}
+
+}
+
+function startOver() { if (confirm("Start this chat over?")) { messages = []; localStorage.setItem(chatKey, JSON.stringify([])); renderMessages(); } }
+
+renderMessages(); </script>
+
 
 </body>
 </html>
