@@ -140,7 +140,7 @@ function renderMessages() {
   chatBox.innerHTML = "";
   messages.forEach(m => {
     const div = document.createElement("div");
-    div.className = "message " + (m.role === "user" ? "user" : "ai");
+    div.className = "message " + (m.role === "user" ? "user" : "assistant");
     div.innerHTML = `
       <img src="${m.role === "user" ? userPic : aiPic}">
       <p>${m.content}</p>
@@ -191,17 +191,17 @@ let data;
 try {
   data = JSON.parse(text);
 } catch {
-  messages.push({ role: "ai", content: "Invalid JSON from Groq." });
+  messages.push({ role: "assistant", content: "Invalid JSON from Groq." });
   renderMessages();
   return;
 }
 
 const reply = data.choices?.[0]?.message?.content || data.error?.message || "Hmm...";
-  messages.push({ role: "ai", content: reply });
+  messages.push({ role: "assistant", content: reply });
   localStorage.setItem(chatKey, JSON.stringify(messages));
   renderMessages();
 } catch (err) {
-  messages.push({ role: "ai", content: "Sorry, something went wrong." });
+  messages.push({ role: "assistant", content: "Sorry, something went wrong." });
   renderMessages();
 }
 
