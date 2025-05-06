@@ -83,7 +83,7 @@
   <button class="right-button" onclick="signOut()" id="signOutBtn" style="display:none;">Sign Out</button>
 </div>
   </div>  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Search Characters or @Usernames" oninput="filterCharacters()">
+    <input type="text" id="searchInput" placeholder="Search Characters" oninput="filterCharacters()">
   </div>  <h2 style="text-align:center">AI Characters</h2>
   <div class="character-grid" id="characterGrid"></div>  <script>
     const characters = JSON.parse(localStorage.getItem("characters") || "[]");
