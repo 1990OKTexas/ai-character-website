@@ -158,58 +158,39 @@ async function sendMessage() {
   renderMessages();
   input.value = "";
 
-  const systemPrompt = `You are ${character.name}, an AI with the following traits:
+  const isFirst = !messages.some(m => m.role === "assistant");
 
-Description: ${character.description}
+  const body = {
+    model: "llama3-70b-8192",
+    messages: isFirst
+      ? [
+          { role: "system", content: `You are ${character.name}. Keep replies short, friendly, and natural. Description: ${character.description} Personality: ${character.personalities} SFW: ${character.sfwOrNsfw}` },
+          ...messages
+        ]
+      : [...messages]
+  };
 
-Personality: ${character.personalities}
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + apiKey
+      },
+      body: JSON.stringify(body)
+    });
 
-This chat is marked as ${character.sfwOrNsfw} Keep replies short, friendly, and natural. Use brief sentences.`;
-
-const body = {
-  model: "llama3-70b-8192",
-  messages: messages.length === 1
-    ? [{ role: "system", content: systemPrompt }, ...messages]
-    : [...messages]
-};
-
-try {
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + apiKey
-    },
-    body: JSON.stringify(body)
-  });
-
-  const text = await res.text();
-console.log("Groq raw response:", text);
-alert(text);
-
-let data;
-try {
-  data = JSON.parse(text);
-} catch {
-  messages.push({ role: "assistant", content: "Invalid JSON from Groq." });
-  renderMessages();
-  return;
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content || data.error?.message || "Hmm...";
+    messages.push({ role: "assistant", content: reply });
+    localStorage.setItem(chatKey, JSON.stringify(messages));
+    renderMessages();
+  } catch {
+    messages.push({ role: "assistant", content: "Something went wrong." });
+    renderMessages();
+  }
 }
-
-const reply = data.choices?.[0]?.message?.content || data.error?.message || "Hmm...";
-  messages.push({ role: "assistant", content: reply });
-  localStorage.setItem(chatKey, JSON.stringify(messages));
-  renderMessages();
-} catch (err) {
-  messages.push({ role: "assistant", content: "Sorry, something went wrong." });
-  renderMessages();
-}
-
-}
-
-function startOver() { if (confirm("Start this chat over?")) { messages = []; localStorage.setItem(chatKey, JSON.stringify([])); renderMessages(); } }
-
-renderMessages(); </script>
+  </script>
 
 
 </body>
