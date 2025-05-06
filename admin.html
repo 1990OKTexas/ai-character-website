@@ -59,6 +59,15 @@
       overflow-x: auto;
       white-space: pre-wrap;
     }
+    button.clear-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -69,13 +78,14 @@
   <div id="userList"></div>
 
   <h2>All Conversations</h2>
+  <button class="clear-btn" onclick="clearRecentChats()">Remove All Recent Chats</button>
   <div id="chatList"></div>
 
   <h2>Messages from Users</h2>
   <div id="messageList"></div>
 
   <script>
-    // Restrict admin access to @TazDaz
+    // Restrict access to TazDaz only
     const currentUser = JSON.parse(localStorage.getItem("loggedInUser"));
     if (!currentUser || currentUser.username !== "TazDaz") {
       alert("Access denied.");
@@ -147,9 +157,9 @@
 
     // CHATS
     const chatList = document.getElementById("chatList");
-    const keys = Object.keys(localStorage).filter(k => k.startsWith("chat_history_"));
+    const chatKeys = Object.keys(localStorage).filter(k => k.startsWith("chat_history_"));
 
-    keys.forEach(key => {
+    chatKeys.forEach(key => {
       const data = JSON.parse(localStorage.getItem(key));
       const [, username, character] = key.split("_", 3);
       const messages = data.filter(m => m.role !== "system");
@@ -162,6 +172,11 @@
       `;
       chatList.appendChild(div);
     });
+
+    function clearRecentChats() {
+      if (!confirm("This will remove chat history from the admin page only. User conversations will stay saved. Proceed?")) return;
+      document.getElementById("chatList").innerHTML = "<p>Chat list cleared from view.</p>";
+    }
 
     // MESSAGES
     const messages = JSON.parse(localStorage.getItem("adminMessages") || "[]");
