@@ -39,8 +39,6 @@
       border-radius: 20px;
       font-size: 13px;
       color: white;
-    }
-    .online {
       background: #28a745;
     }
     .home-btn {
@@ -102,7 +100,13 @@
     <img id="profilePic" class="profile-pic" src="" alt="Profile Picture" />
     <h2 id="displayName"></h2>
     <div class="meta" id="signupDate"></div>
-    <div id="statusBadge" class="status online">Online</div>
+    <div id="statusBadge" class="status">Online</div>
+  </div>
+
+  <div class="message-box" style="max-width:600px;margin:0 auto 30px auto;">
+    <h3>Message Admin</h3>
+    <textarea id="adminMessage" rows="3" placeholder="Write your message here..." style="width:100%;padding:10px;border-radius:6px;border:1px solid #ccc;"></textarea>
+    <button onclick="sendAdminMessage()" style="margin-top:10px;padding:8px 12px;background:#007bff;color:white;border:none;border-radius:6px;">Send Message</button>
   </div>
 
   <div class="char-section">
@@ -146,13 +150,28 @@
       }
     }
 
+    function sendAdminMessage() {
+      const message = document.getElementById("adminMessage").value.trim();
+      if (!message) return alert("Please type a message.");
+
+      const existing = JSON.parse(localStorage.getItem("adminMessages") || "[]");
+      existing.push({
+        from: user.username,
+        text: message,
+        date: new Date().toLocaleString()
+      });
+
+      localStorage.setItem("adminMessages", JSON.stringify(existing));
+      alert("Your message has been sent to the admin.");
+      document.getElementById("adminMessage").value = "";
+    }
+
     function editCharacter(name) {
       location.href = `edit.html?name=${encodeURIComponent(name)}`;
     }
 
     function deleteCharacter(name) {
       if (!confirm(`Delete ${name}? This cannot be undone.`)) return;
-
       const characters = JSON.parse(localStorage.getItem("characters") || "[]");
       const updated = characters.filter(c => c.name !== name);
       localStorage.setItem("characters", JSON.stringify(updated));
