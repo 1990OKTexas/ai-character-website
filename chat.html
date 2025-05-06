@@ -168,10 +168,9 @@ This chat is marked as ${character.sfwOrNsfw} Keep replies short, friendly, and 
 
 const body = {
   model: "llama3-70b-8192",
-  messages: [
-    { role: "system", content: systemPrompt },
-    ...messages.slice(-10)
-  ]
+  messages: messages.length === 1
+    ? [{ role: "system", content: systemPrompt }, ...messages]
+    : [...messages]
 };
 
 try {
