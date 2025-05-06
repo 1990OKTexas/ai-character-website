@@ -101,13 +101,12 @@
     }
 
     function filterCharacters() {
-      const query = document.getElementById("searchInput").value.toLowerCase();
-      const filtered = characters.filter(char =>
-        char.name.toLowerCase().includes(query) ||
-        ("@" + char.createdBy.toLowerCase()).includes(query)
-      );
-      renderCharacters(filtered);
-    }
+  const query = document.getElementById("searchInput").value.toLowerCase();
+  const filtered = characters.filter(char =>
+    char.name.toLowerCase().includes(query)
+  );
+  renderCharacters(filtered);
+}
 
     renderCharacters();
   </script></body>
