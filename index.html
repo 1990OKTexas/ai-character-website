@@ -75,10 +75,10 @@
 <body>
   <div class="header">
     <div class="left-buttons">
-      <button onclick="window.location.href='create.html'">Create A Character</button>
-      <button onclick="window.location.href='profile.html'" id="profileBtn" style="display:none;">Go to Profile</button>
-<button onclick="window.location.href='login.html'" id="signInBtn" style="display:none;">Sign In</button>
-    </div>
+  <button onclick="window.location.href='create.html'">Create A Character</button>
+  <button onclick="window.location.href='profile.html'" id="profileBtn" style="display:none;">Go to Profile</button>
+  <button onclick="window.location.href='login.html'" id="signInBtn" style="display:none;">Sign In</button>
+</div>
     <div style="display:flex; gap:10px; align-items:center;" id="adminControls">
   <button class="right-button" onclick="window.location.href='admin.html'">Admin Login</button>
   <button class="right-button" onclick="signOut()" id="signOutBtn" style="display:none;">Sign Out</button>
@@ -133,6 +133,14 @@
   
 
     const isLoggedIn = localStorage.getItem("loggedInUser");
+    if (isLoggedIn) {
+      document.getElementById("profileBtn").style.display = "inline-block";
+    } else {
+      document.getElementById("signInBtn").style.display = "inline-block";
+    }
+  
+
+    const isLoggedIn = !!localStorage.getItem("loggedInUser");
     if (isLoggedIn) {
       document.getElementById("profileBtn").style.display = "inline-block";
     } else {
