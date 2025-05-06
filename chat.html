@@ -56,3 +56,141 @@
         height: 300px;
         overflow-y: auto;
         padding: 10px;
+        margin-bottom: 10px;
+        background: #fefefe;
+      }
+      #messageInput {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        margin-top: 6px;
+      }
+      #sendBtn {
+        margin-top: 6px;
+        padding: 8px 12px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .locked-message {
+        text-align: center;
+        color: red;
+        font-size: 14px;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+
+    <button class="home-btn" onclick="location.href='index.html'">Go Home</button>
+
+    <div class="container">
+      <img id="charImg" class="character-img" src="" alt="Character Image" />
+      <h2 id="charName"></h2>
+      <div class="description">
+        <strong>Description:</strong> <span id="charDesc">Loading...</span>
+      </div>
+
+      <div class="chat-area" id="chatbox"></div>
+
+      <div id="lockNotice" class="locked-message" style="display:none;">
+        In order to use this feature, please log in.
+      </div>
+
+      <input type="text" id="messageInput" placeholder="Type a message..." disabled />
+      <button id="sendBtn" onclick="sendMessage()" disabled>Send</button>
+    </div>
+
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const charName = urlParams.get('name');
+      const characters = JSON.parse(localStorage.getItem("characters") || "[]");
+      const character = characters.find(c => c.name === charName);
+
+      if (character) {
+        document.getElementById("charImg").src = character.image;
+        document.getElementById("charName").textContent = character.name;
+        document.getElementById("charDesc").textContent = character.description;
+      }
+
+      let chatHistory = [];
+      let loggedUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+
+      if (!loggedUser) {
+        document.getElementById("lockNotice").style.display = "block";
+      } else {
+        document.getElementById("messageInput").disabled = false;
+        document.getElementById("sendBtn").disabled = false;
+
+        const sfwNote = character.sfw === "NSFW"
+          ? "You are allowed to engage in mature, suggestive, or explicit conversations."
+          : "Keep all responses safe-for-work, respectful, and appropriate.";
+
+        const systemPrompt = `
+You are ${character.name}.
+${character.description}
+
+Your personality is shaped by these traits: ${character.tags}.
+${sfwNote}
+
+Stay in character, speak naturally, and respond like a real person would in a back-and-forth conversation.
+        `.trim();
+
+        chatHistory.push({ role: "system", content: systemPrompt });
+      }
+
+      async function sendMessage() {
+        if (!loggedUser) return;
+
+        const input = document.getElementById("messageInput");
+        const text = input.value.trim();
+        if (!text) return;
+
+        const chatbox = document.getElementById("chatbox");
+        const msg = document.createElement("div");
+        msg.innerHTML = `<strong style="color:#007bff">${loggedUser.username}:</strong> ${text}`;
+        chatbox.appendChild(msg);
+        chatbox.scrollTop = chatbox.scrollHeight;
+        input.value = "";
+
+        chatHistory.push({ role: "user", content: text });
+
+        try {
+          const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer YOUR_GROQ_API_KEY"
+            },
+            body: JSON.stringify({
+              model: "llama3-70b-8192",
+              messages: chatHistory
+            })
+          });
+
+          const data = await response.json();
+          let aiText = "Hmm...";
+          if (data && data.choices && data.choices[0] && data.choices[0].message) {
+            aiText = data.choices[0].message.content;
+            chatHistory.push({ role: "assistant", content: aiText });
+          } else if (data.error) {
+            aiText = `Error: ${data.error.message}`;
+          }
+
+          const aiReply = document.createElement("div");
+          aiReply.innerHTML = `<strong style="color:#ff6600">${character.name}:</strong> ${aiText}`;
+          chatbox.appendChild(aiReply);
+          chatbox.scrollTop = chatbox.scrollHeight;
+
+        } catch (err) {
+          const fail = document.createElement("div");
+          fail.innerHTML = `<strong style="color:red">${character.name}:</strong> Failed to contact AI: ${err.message}`;
+          chatbox.appendChild(fail);
+        }
+      }
+    </script>
+  </body>
+</html>
