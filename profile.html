@@ -10,7 +10,7 @@
     }
     .profile-container {
       max-width: 400px;
-      margin: 60px auto;
+      margin: 60px auto 20px auto;
       background: white;
       padding: 24px;
       border-radius: 12px;
@@ -46,14 +46,67 @@
     .offline {
       background: #6c757d;
     }
+    .home-btn {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .char-section {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .char-section h3 {
+      text-align: center;
+      margin-top: 40px;
+    }
+    .char-card {
+      display: inline-block;
+      width: 200px;
+      background: white;
+      margin: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .char-card img {
+      width: 160px;
+      height: 160px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    .char-card button {
+      margin-top: 10px;
+      padding: 6px 12px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
+
+  <button class="home-btn" onclick="location.href='index.html'">Go Back Home</button>
+
   <div class="profile-container">
     <img id="profilePic" class="profile-pic" src="" alt="Profile Picture" />
     <h2 id="displayName"></h2>
     <div class="meta" id="signupDate"></div>
     <div id="statusBadge" class="status">Status</div>
+  </div>
+
+  <div class="char-section">
+    <h3>My Characters</h3>
+    <div id="userCharacters"></div>
   </div>
 
   <script>
@@ -74,9 +127,28 @@
       document.getElementById("statusBadge").textContent = "Online";
       document.getElementById("statusBadge").classList.add("online");
 
-      // Default profile pic fallback
       const defaultPic = "https://via.placeholder.com/160?text=User";
       document.getElementById("profilePic").src = user.profilePic || defaultPic;
+
+      // Load characters by this user
+      const characters = JSON.parse(localStorage.getItem("characters") || "[]");
+      const myCharacters = characters.filter(c => c.createdBy === user.username);
+      const container = document.getElementById("userCharacters");
+
+      if (myCharacters.length === 0) {
+        container.innerHTML = "<p style='text-align:center;'>You haven’t created any characters yet.</p>";
+      } else {
+        myCharacters.forEach(char => {
+          const div = document.createElement("div");
+          div.className = "char-card";
+          div.innerHTML = `
+            <img src="${char.image}" />
+            <h4>${char.name}</h4>
+            <button onclick="location.href='chat.html?name=${encodeURIComponent(char.name)}'">Chat Now</button>
+          `;
+          container.appendChild(div);
+        });
+      }
     }
   </script>
 </body>
