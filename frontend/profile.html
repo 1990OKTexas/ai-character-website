@@ -3,111 +3,7 @@
 <head>
   <title>User Profile</title>
   <style>
-    body {
-      font-family: sans-serif;
-      background: #f4f4f4;
-      padding: 20px;
-    }
-    .profile-container {
-      max-width: 400px;
-      margin: 60px auto 20px auto;
-      background: white;
-      padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-      text-align: center;
-    }
-    .profile-pic {
-      width: 160px;
-      height: 160px;
-      object-fit: cover;
-      border-radius: 100%;
-      border: 3px solid #ccc;
-    }
-    h2 {
-      margin-top: 8px;
-      margin-bottom: 8px;
-    }
-    .meta {
-      font-size: 14px;
-      color: #555;
-    }
-    .status {
-      display: inline-block;
-      margin-top: 12px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 13px;
-      color: white;
-      background: #28a745;
-    }
-    .home-btn {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 13px;
-    }
-    .edit-form {
-      max-width: 400px;
-      margin: 20px auto;
-      background: white;
-      padding: 16px;
-      border-radius: 12px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.05);
-      display: none;
-    }
-    .edit-form input, .edit-form select {
-      width: 100%;
-      margin: 8px 0;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    .edit-form button {
-      padding: 10px;
-      width: 100%;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      margin-top: 10px;
-    }
-    .char-card {
-      display: inline-block;
-      width: 200px;
-      background: white;
-      margin: 10px;
-      padding: 10px;
-      border-radius: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    .char-card img {
-      width: 160px;
-      height: 160px;
-      border-radius: 8px;
-      object-fit: cover;
-    }
-    .char-card button {
-      margin: 6px 4px 0 4px;
-      padding: 6px 10px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 12px;
-    }
-    .delete-btn {
-      background: #dc3545;
-    }
+    /* your same styles here, no change needed */
   </style>
 </head>
 <body>
@@ -152,58 +48,71 @@
   </div>
 
   <script>
+    const API_BASE = 'https://your-backend-url.onrender.com';
     const params = new URLSearchParams(window.location.search);
     const viewingUser = params.get("user");
-    const allUsers = JSON.parse(localStorage.getItem("users") || "[]");
-    const currentUser = JSON.parse(localStorage.getItem("loggedInUser"));
+    let currentUser = null;
     let user = null;
 
-    if (viewingUser) {
-      user = allUsers.find(u => u.username === viewingUser);
-    } else {
-      user = currentUser;
+    async function loadProfile() {
+      const res = await fetch(`${API_BASE}/api/users/me`, { credentials: "include" });
+      if (res.ok) {
+        currentUser = await res.json();
+      }
+
+      const userRes = viewingUser
+        ? await fetch(`${API_BASE}/api/users/${viewingUser}`)
+        : await fetch(`${API_BASE}/api/users/me`, { credentials: "include" });
+
+      if (!userRes.ok) {
+        alert("User not found or not logged in.");
+        location.href = "index.html";
+        return;
+      }
+
+      user = await userRes.json();
+
+      const isOwner = currentUser && user.username === currentUser.username;
+
+      document.getElementById("displayName").textContent = "@" + user.username;
+      document.getElementById("signupDate").textContent = "Signed up on: " + new Date(user.signupDate || Date.now()).toLocaleDateString();
+      document.getElementById("profilePic").src = user.profilePic || "https://via.placeholder.com/160?text=User";
+
+      if (user.username === "TazDaz") {
+        document.getElementById("adminTag").style.display = "block";
+      }
+
+      if (isOwner) {
+        document.getElementById("editBtn").style.display = "inline-block";
+      }
+
+      loadCharacters(user.username, isOwner);
     }
 
-    if (!user) {
-      alert("User not found or not logged in.");
-      location.href = "index.html";
-    }
+    async function loadCharacters(username, isOwner) {
+      const res = await fetch(`${API_BASE}/api/characters`);
+      const characters = await res.json();
+      const myCharacters = characters.filter(c => c.createdBy === username);
+      const container = document.getElementById("userCharacters");
 
-    const isOwner = currentUser && currentUser.username === user.username;
-
-    document.getElementById("displayName").textContent = "@" + user.username;
-    document.getElementById("signupDate").textContent = "Signed up on: " + new Date(user.signupDate || Date.now()).toLocaleDateString();
-    document.getElementById("profilePic").src = user.profilePic || "https://via.placeholder.com/160?text=User";
-
-    if (user.username === "TazDaz") {
-      document.getElementById("adminTag").style.display = "block";
-    }
-
-    if (isOwner) {
-      document.getElementById("editBtn").style.display = "inline-block";
-    }
-
-    const characters = JSON.parse(localStorage.getItem("characters") || "[]");
-    const myCharacters = characters.filter(c => c.createdBy === user.username);
-    const container = document.getElementById("userCharacters");
-
-    if (myCharacters.length === 0) {
-      container.innerHTML = "<p style='text-align:center;'>This user hasn’t created any characters yet.</p>";
-    } else {
-      myCharacters.forEach(char => {
-        const div = document.createElement("div");
-        div.className = "char-card";
-        div.innerHTML = `
-          <img src="${char.image}" />
-          <h4>${char.name}</h4>
-          <button onclick="location.href='chat.html?name=${encodeURIComponent(char.name)}'">Chat Now</button>
-          ${isOwner ? `
-            <button onclick="editCharacter('${char.name}')">Edit</button>
-            <button class="delete-btn" onclick="deleteCharacter('${char.name}')">Delete</button>
-          ` : ""}
-        `;
-        container.appendChild(div);
-      });
+      if (myCharacters.length === 0) {
+        container.innerHTML = "<p style='text-align:center;'>This user hasn’t created any characters yet.</p>";
+      } else {
+        myCharacters.forEach(char => {
+          const div = document.createElement("div");
+          div.className = "char-card";
+          div.innerHTML = `
+            <img src="${char.image}" />
+            <h4>${char.name}</h4>
+            <button onclick="location.href='chat.html?name=${encodeURIComponent(char.name)}'">Chat Now</button>
+            ${isOwner ? `
+              <button onclick="editCharacter('${char.name}')">Edit</button>
+              <button class="delete-btn" onclick="deleteCharacter('${char.name}')">Delete</button>
+            ` : ""}
+          `;
+          container.appendChild(div);
+        });
+      }
     }
 
     function showEditForm() {
@@ -239,69 +148,53 @@
       }
     });
 
-    function saveProfile() {
-      const newNick = document.getElementById("editNickname").value.trim();
-      const newUser = document.getElementById("editUsername").value.trim();
-      const newSex = document.getElementById("editSex").value;
-      const newPic = document.getElementById("editPreview").src;
-
-      const oldPassInput = document.getElementById("oldPass");
-      const newPassInput = document.getElementById("newPass");
-      const confirmPassInput = document.getElementById("confirmPass");
-
-      if (!newUser) return alert("Username is required.");
-
-      let finalPassword = user.password;
-
-      if (oldPassInput && oldPassInput.value) {
-        if (oldPassInput.value !== user.password) {
-          alert("Old password is incorrect.");
-          return;
-        }
-        if (!newPassInput.value || !confirmPassInput.value) {
-          alert("Please enter and confirm your new password.");
-          return;
-        }
-        if (newPassInput.value !== confirmPassInput.value) {
-          alert("New passwords do not match.");
-          return;
-        }
-        finalPassword = newPassInput.value;
-      }
-
-      const updatedUser = {
-        ...user,
-        nickname: newNick,
-        username: newUser,
-        sex: newSex,
-        profilePic: newPic,
-        password: finalPassword
+    async function saveProfile() {
+      const updated = {
+        nickname: document.getElementById("editNickname").value.trim(),
+        username: document.getElementById("editUsername").value.trim(),
+        sex: document.getElementById("editSex").value,
+        profilePic: document.getElementById("editPreview").src
       };
 
-      const updatedUsers = allUsers.map(u => u.username === user.username ? updatedUser : u);
-      localStorage.setItem("users", JSON.stringify(updatedUsers));
-      localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
+      const oldPass = document.getElementById("oldPass").value;
+      const newPass = document.getElementById("newPass").value;
+      const confirm = document.getElementById("confirmPass").value;
 
-      const characters = JSON.parse(localStorage.getItem("characters") || "[]");
-      const synced = characters.map(c => c.createdBy === user.username ? { ...c, createdBy: newUser } : c);
-      localStorage.setItem("characters", JSON.stringify(synced));
+      if (oldPass || newPass || confirm) {
+        if (newPass !== confirm) return alert("Passwords do not match.");
+        updated.oldPassword = oldPass;
+        updated.newPassword = newPass;
+      }
 
-      alert("Profile updated!");
-      location.reload();
+      const res = await fetch(`${API_BASE}/api/users/update`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(updated)
+      });
+
+      if (res.ok) {
+        alert("Profile updated!");
+        location.reload();
+      } else {
+        alert("Update failed.");
+      }
     }
 
-    function editCharacter(name) {
+    async function editCharacter(name) {
       location.href = `edit.html?name=${encodeURIComponent(name)}`;
     }
 
-    function deleteCharacter(name) {
+    async function deleteCharacter(name) {
       if (!confirm(`Delete ${name}? This cannot be undone.`)) return;
-      const characters = JSON.parse(localStorage.getItem("characters") || "[]");
-      const updated = characters.filter(c => c.name !== name);
-      localStorage.setItem("characters", JSON.stringify(updated));
+      await fetch(`${API_BASE}/api/characters/${encodeURIComponent(name)}`, {
+        method: "DELETE",
+        credentials: "include"
+      });
       location.reload();
     }
-  </script>
 
+    loadProfile();
+  </script>
 </body>
 </html>
