@@ -51,6 +51,20 @@
         color: #555;
         margin-bottom: 20px;
       }
+      .status {
+        display: inline-block;
+        margin-top: 10px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        color: white;
+        background-color: #28a745; /* green for online status */
+      }
+      .createdBy {
+        font-size: 12px;
+        margin-top: 10px;
+        color: #555;
+      }
       .chat-area {
         border: 1px solid #ccc;
         border-radius: 8px;
@@ -61,13 +75,14 @@
         background: #fefefe;
       }
       #messageInput {
-        width: 100%;
+        width: 80%;
         padding: 8px;
         border: 1px solid #ccc;
         border-radius: 6px;
         margin-top: 6px;
       }
-      #sendBtn {
+      #sendBtn, #resetBtn {
+        width: 18%;
         margin-top: 6px;
         padding: 8px 12px;
         background: #007bff;
@@ -92,8 +107,12 @@
     <div class="container">
       <img id="charImg" class="character-img" src="" alt="Character Image" />
       <h2 id="charName"></h2>
+      <div class="status" id="statusBadge">Online</div>
       <div class="description">
         <strong>Description:</strong> <span id="charDesc">Loading...</span>
+      </div>
+      <div class="createdBy">
+        <strong>Created By:</strong> <span id="createdBy"></span>
       </div>
 
       <div class="chat-area" id="chatbox"></div>
@@ -132,6 +151,7 @@
         document.getElementById("charImg").src = character.image;
         document.getElementById("charName").textContent = character.name;
         document.getElementById("charDesc").textContent = character.description;
+        document.getElementById("createdBy").textContent = character.createdBy;
       }
 
       function loadChatHistory() {
