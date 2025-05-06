@@ -72,7 +72,7 @@
 
     <div class="top-bar">
       <div>
-        <button class="create-btn" onclick="location.href='create.html'">Create A Character</button>
+        <button class="create-btn" onclick="goToCreate()">Create A Character</button>
         <button class="user-btn" onclick="location.href='login.html'">Sign In / Sign Up</button>
       </div>
       <button class="admin-btn" onclick="location.href='admin.html'">Admin Login</button>
@@ -95,6 +95,15 @@
         `;
         container.appendChild(div);
       });
+
+      function goToCreate() {
+        const user = localStorage.getItem("loggedInUser");
+        if (!user) {
+          alert("In order to use this feature, please log in.");
+        } else {
+          location.href = "create.html";
+        }
+      }
     </script>
 
   </body>
