@@ -49,6 +49,9 @@
       border-radius: 6px;
       cursor: pointer;
     }
+    .delete-btn {
+      background: #dc3545;
+    }
     .chat-box pre {
       background: #f9f9f9;
       padding: 10px;
@@ -68,7 +71,18 @@
   <h2>All Conversations</h2>
   <div id="chatList"></div>
 
+  <h2>Messages from Users</h2>
+  <div id="messageList"></div>
+
   <script>
+    // Restrict admin access to @TazDaz
+    const currentUser = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (!currentUser || currentUser.username !== "TazDaz") {
+      alert("Access denied.");
+      window.location.href = "index.html";
+    }
+
+    // USERS
     const users = JSON.parse(localStorage.getItem("users") || "[]");
     const userList = document.getElementById("userList");
 
@@ -87,6 +101,7 @@
         <div class="reset">
           <input type="text" id="reset-${user.username}" placeholder="New password for ${user.username}">
           <button onclick="resetPassword('${user.username}')">Reset Password</button>
+          ${user.username !== "TazDaz" ? `<button class="delete-btn" onclick="deleteUser('${user.username}')">Delete User</button>` : ""}
         </div>
       `;
       userList.appendChild(div);
@@ -109,7 +124,28 @@
       input.value = "";
     }
 
-    // Show conversations
+    function deleteUser(username) {
+      if (!confirm(`Are you sure you want to delete @${username} and all their data?`)) return;
+
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const updatedUsers = users.filter(u => u.username !== username);
+      localStorage.setItem("users", JSON.stringify(updatedUsers));
+
+      const characters = JSON.parse(localStorage.getItem("characters") || "[]");
+      const filteredChars = characters.filter(c => c.createdBy !== username);
+      localStorage.setItem("characters", JSON.stringify(filteredChars));
+
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith("chat_history_" + username)) {
+          localStorage.removeItem(key);
+        }
+      });
+
+      alert(`@${username} has been deleted.`);
+      location.reload();
+    }
+
+    // CHATS
     const chatList = document.getElementById("chatList");
     const keys = Object.keys(localStorage).filter(k => k.startsWith("chat_history_"));
 
@@ -121,11 +157,26 @@
       const div = document.createElement("div");
       div.className = "chat-box";
       div.innerHTML = `
-        <strong>${username} &rarr; ${character}</strong>
+        <strong>${username} → ${character}</strong>
         <pre>${messages.map(m => `${m.role === 'user' ? username : character}: ${m.content}`).join('\n\n')}</pre>
       `;
       chatList.appendChild(div);
     });
+
+    // MESSAGES
+    const messages = JSON.parse(localStorage.getItem("adminMessages") || "[]");
+    const messageList = document.getElementById("messageList");
+
+    if (messages.length === 0) {
+      messageList.innerHTML = "<p>No messages.</p>";
+    } else {
+      messages.forEach(m => {
+        const div = document.createElement("div");
+        div.className = "user-card";
+        div.innerHTML = `<strong>@${m.from}</strong> <em>${m.date}</em><br>${m.text}`;
+        messageList.appendChild(div);
+      });
+    }
   </script>
 
 </body>
