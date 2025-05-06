@@ -80,8 +80,8 @@
     </div>
     <button class="right-button" onclick="window.location.href='admin.html'">Admin Login</button>
   </div>  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Search Characters or @Usernames" oninput="filterCharacters()">
-  </div>  <h2 style="text-align:center">AI Characters</h2>
+    <input type="text" id="searchInput" placeholder="Search Characters" oninput="filterCharacters()">
+  </div>  <h2 style="text-align:center">AI Homepage</h2>
   <div class="character-grid" id="characterGrid"></div>  <script>
     const characters = JSON.parse(localStorage.getItem("characters") || "[]");
     const grid = document.getElementById("characterGrid");
