@@ -53,42 +53,31 @@
       cursor: pointer;
       font-size: 13px;
     }
-    .char-section {
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    .char-section h3 {
-      text-align: center;
-      margin-top: 40px;
-    }
-    .char-card {
-      display: inline-block;
-      width: 200px;
+    .edit-form {
+      max-width: 400px;
+      margin: 20px auto;
       background: white;
-      margin: 10px;
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.05);
+      display: none;
+    }
+    .edit-form input, .edit-form select {
+      width: 100%;
+      margin: 8px 0;
       padding: 10px;
-      border-radius: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-      text-align: center;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
-    .char-card img {
-      width: 160px;
-      height: 160px;
-      border-radius: 8px;
-      object-fit: cover;
-    }
-    .char-card button {
-      margin: 6px 4px 0 4px;
-      padding: 6px 10px;
+    .edit-form button {
+      padding: 10px;
+      width: 100%;
       background: #007bff;
       color: white;
       border: none;
       border-radius: 6px;
-      cursor: pointer;
-      font-size: 12px;
-    }
-    .delete-btn {
-      background: #dc3545;
+      font-size: 14px;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -101,59 +90,82 @@
     <h2 id="displayName"></h2>
     <div class="meta" id="signupDate"></div>
     <div id="statusBadge" class="status">Online</div>
+    <button onclick="showEditForm()" style="margin-top: 12px;">Edit Profile</button>
   </div>
 
-  <div class="message-box" id="messageBox" style="max-width:600px;margin:0 auto 30px auto; display: none;">
-    <h3>Message Admin</h3>
-    <textarea id="adminMessage" rows="3" placeholder="Write your message here..." style="width:100%;padding:10px;border-radius:6px;border:1px solid #ccc;"></textarea>
-    <button onclick="sendAdminMessage()" style="margin-top:10px;padding:8px 12px;background:#007bff;color:white;border:none;border-radius:6px;">Send Message</button>
-  </div>
-
-  <div class="char-section">
-    <h3>My Characters</h3>
-    <div id="userCharacters"></div>
+  <div class="edit-form" id="editForm">
+    <input type="text" id="editNickname" placeholder="Nickname">
+    <input type="text" id="editUsername" placeholder="Username (no @)">
+    <select id="editSex">
+      <option>Male</option>
+      <option>Female</option>
+      <option>Non-binary</option>
+      <option>N/A</option>
+    </select>
+    <input type="text" id="editPicURL" placeholder="Profile Picture URL">
+    <input type="file" id="editPicFile" accept="image/*">
+    <img id="editPreview" src="" style="width:100px;height:100px;border-radius:50%;margin-top:10px;">
+    <button onclick="saveProfile()">Save</button>
   </div>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const viewingUser = params.get("user");
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
     const allUsers = JSON.parse(localStorage.getItem("users") || "[]");
-    const currentUser = JSON.parse(localStorage.getItem("loggedInUser"));
-
-    let user = null;
-    if (viewingUser) {
-      user = allUsers.find(u => u.username === viewingUser);
-    } else {
-      user = currentUser;
-    }
 
     if (!user) {
-      alert("User not found or not logged in.");
-      window.location.href = "index.html";
+      alert("You must be logged in.");
+      location.href = "login.html";
     }
-
-    const isOwner = currentUser && currentUser.username === user.username;
 
     document.getElementById("displayName").textContent = "@" + user.username;
-    const signup = new Date(user.signupDate || Date.now());
-    document.getElementById("signupDate").textContent = "Signed up on: " + signup.toLocaleDateString("en-US");
-    const defaultPic = "https://via.placeholder.com/160?text=User";
-    document.getElementById("profilePic").src = user.profilePic || defaultPic;
+    document.getElementById("signupDate").textContent = "Signed up on: " + new Date(user.signupDate || Date.now()).toLocaleDateString();
+    document.getElementById("profilePic").src = user.profilePic || "https://via.placeholder.com/160?text=User";
 
-    if (isOwner) {
-      document.getElementById("messageBox").style.display = "block";
+    function showEditForm() {
+      document.getElementById("editForm").style.display = "block";
+      document.getElementById("editNickname").value = user.nickname;
+      document.getElementById("editUsername").value = user.username;
+      document.getElementById("editSex").value = user.sex || "N/A";
+      document.getElementById("editPicURL").value = user.profilePic || "";
+      document.getElementById("editPreview").src = user.profilePic || "https://via.placeholder.com/100";
     }
 
-    const characters = JSON.parse(localStorage.getItem("characters") || "[]");
-    const myCharacters = characters.filter(c => c.createdBy === user.username);
-    const container = document.getElementById("userCharacters");
+    document.getElementById("editPicFile").addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = evt => {
+          document.getElementById("editPreview").src = evt.target.result;
+          document.getElementById("editPicURL").value = "";
+        };
+        reader.readAsDataURL(file);
+      }
+    });
 
-    if (myCharacters.length === 0) {
-      container.innerHTML = "<p style='text-align:center;'>This user hasn't created any characters yet.</p>";
-    } else {
-      myCharacters.forEach(char => {
-        const div = document.createElement("div");
-        div.className = "char-card";
-        div.innerHTML = `
-          <img src="${char.image}" />
-          <h4>${
+    document.getElementById("editPicURL").addEventListener("input", e => {
+      if (e.target.value) {
+        document.getElementById("editPreview").src = e.target.value;
+        document.getElementById("editPicFile").value = "";
+      }
+    });
+
+    function saveProfile() {
+      const newNick = document.getElementById("editNickname").value.trim();
+      const newUser = document.getElementById("editUsername").value.trim();
+      const newSex = document.getElementById("editSex").value;
+      const newPic = document.getElementById("editPreview").src;
+
+      if (!newUser) return alert("Username is required.");
+
+      const updatedUser = { ...user, nickname: newNick, username: newUser, sex: newSex, profilePic: newPic };
+      const updatedUsers = allUsers.map(u => u.username === user.username ? updatedUser : u);
+      localStorage.setItem("users", JSON.stringify(updatedUsers));
+      localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
+
+      alert("Profile updated!");
+      location.reload();
+    }
+  </script>
+
+</body>
+</html>
