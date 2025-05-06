@@ -35,6 +35,16 @@
       border-radius: 6px;
       border: 1px solid #ccc;
     }
+    .preview {
+      margin-top: 10px;
+    }
+    .preview img {
+      width: 160px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid #ccc;
+    }
     button {
       width: 100%;
       margin-top: 20px;
@@ -53,7 +63,7 @@
     <h2><strong>SIGN UP</strong></h2>
 
     <label for="nickname">NICKNAME:</label>
-    <input type="text" id="nickname" placeholder="Enter your nickname" />
+    <input type="text" id="nickname" />
 
     <label for="sex">SEX:</label>
     <select id="sex">
@@ -63,11 +73,16 @@
       <option>N/A</option>
     </select>
 
-    <label for="profilePic">PROFILE PICTURE (Image URL):</label>
+    <label for="profilePic">PROFILE PICTURE (URL or Upload):</label>
     <input type="text" id="profilePic" placeholder="https://example.com/image.jpg" />
+    <input type="file" id="profilePicFile" accept="image/*" />
+
+    <div class="preview">
+      <img id="picPreview" src="https://via.placeholder.com/160?text=Preview" />
+    </div>
 
     <label for="username">CREATE A USERNAME:</label>
-    <input type="text" id="username" placeholder="This will be your login" />
+    <input type="text" id="username" />
 
     <label for="password">PASSWORD:</label>
     <input type="password" id="password" />
@@ -79,13 +94,34 @@
   </div>
 
   <script>
+    const profilePicURL = document.getElementById("profilePic");
+    const profilePicFile = document.getElementById("profilePicFile");
+    const preview = document.getElementById("picPreview");
+
+    profilePicURL.addEventListener("input", () => {
+      if (profilePicURL.value) {
+        preview.src = profilePicURL.value;
+        profilePicFile.value = "";
+      }
+    });
+
+    profilePicFile.addEventListener("change", () => {
+      const file = profilePicFile.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = e => preview.src = e.target.result;
+        reader.readAsDataURL(file);
+        profilePicURL.value = "";
+      }
+    });
+
     function handleSignup() {
       const nickname = document.getElementById("nickname").value.trim();
       const sex = document.getElementById("sex").value;
-      const profilePic = document.getElementById("profilePic").value.trim();
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value;
       const confirmPassword = document.getElementById("confirmPassword").value;
+      const profilePic = preview.src;
 
       if (!nickname || !username || !password || !confirmPassword) {
         alert("Please fill in all fields.");
@@ -107,9 +143,9 @@
       const newUser = {
         nickname,
         sex,
-        profilePic,
         username,
         password,
+        profilePic,
         signupDate: new Date().toISOString()
       };
 
