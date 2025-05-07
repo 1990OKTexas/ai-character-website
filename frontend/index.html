@@ -74,7 +74,6 @@
   </style>
 </head>
 <body>
-
   <div class="header">
     <div class="left-buttons">
       <button onclick="window.location.href='create.html'">Create A Character</button>
@@ -96,39 +95,35 @@
 
   <script>
     const API_BASE = 'https://ai-character-backend.onrender.com';
-    let allCharacters = [];
 
-    async function loadUser() {
-      try {
-        const res = await fetch(`${API_BASE}/api/users/me`, { credentials: 'include' });
-        if (res.ok) {
-          document.getElementById("profileBtn").style.display = "inline-block";
-          document.getElementById("signOutBtn").style.display = "inline-block";
-        } else {
-          document.getElementById("signInBtn").style.display = "inline-block";
-        }
-      } catch {
+    async function checkUser() {
+      const res = await fetch(`${API_BASE}/api/users/me`, { credentials: "include" });
+      if (res.ok) {
+        document.getElementById("profileBtn").style.display = "inline-block";
+        document.getElementById("signOutBtn").style.display = "inline-block";
+      } else {
         document.getElementById("signInBtn").style.display = "inline-block";
       }
     }
 
-    function signOut() {
-      fetch(`${API_BASE}/api/users/logout`, {
+    async function signOut() {
+      await fetch(`${API_BASE}/api/users/logout`, {
         method: "POST",
         credentials: "include"
-      }).then(() => location.reload());
+      });
+      window.location.reload();
     }
 
     async function loadCharacters() {
       const res = await fetch(`${API_BASE}/api/characters`);
-      allCharacters = await res.json();
-      renderCharacters(allCharacters);
+      const characters = await res.json();
+      renderCharacters(characters);
     }
 
-    function renderCharacters(list) {
+    function renderCharacters(characters) {
       const grid = document.getElementById("characterGrid");
       grid.innerHTML = "";
-      list.forEach(char => {
+      characters.forEach(char => {
         const div = document.createElement("div");
         div.className = "card";
         div.innerHTML = `
@@ -140,15 +135,17 @@
       });
     }
 
-    function filterCharacters() {
+    async function filterCharacters() {
       const query = document.getElementById("searchInput").value.toLowerCase();
-      const filtered = allCharacters.filter(char =>
+      const res = await fetch(`${API_BASE}/api/characters`);
+      const characters = await res.json();
+      const filtered = characters.filter(char =>
         char.name.toLowerCase().includes(query)
       );
       renderCharacters(filtered);
     }
 
-    loadUser();
+    checkUser();
     loadCharacters();
   </script>
 </body>
