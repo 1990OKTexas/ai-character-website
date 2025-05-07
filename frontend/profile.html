@@ -121,3 +121,55 @@
     <div class="meta" id="signupDate"></div>
     <div id="statusBadge" class="status">Online</div>
     <button id="editBtn" onclick="showEditForm()" style="margin-top: 12px; display: none;">Edit Profile</button>
+  </div>
+
+  <div class="edit-form" id="editForm">
+    <input type="text" id="editNickname" placeholder="Nickname">
+    <input type="text" id="editUsername" placeholder="Username (no @)">
+    <select id="editSex">
+      <option>Male</option>
+      <option>Female</option>
+      <option>Non-binary</option>
+      <option>N/A</option>
+    </select>
+    <input type="text" id="editPicURL" placeholder="Profile Picture URL">
+    <input type="file" id="editPicFile" accept="image/*">
+    <img id="editPreview" src="" style="width:100px;height:100px;border-radius:50%;margin-top:10px;">
+
+    <p style="margin-top:20px;"><a href="#" onclick="togglePasswordChange()">Create new password</a></p>
+    <div id="passwordSection" style="display:none;">
+      <input type="password" id="oldPass" placeholder="Old Password">
+      <input type="password" id="newPass" placeholder="New Password">
+      <input type="password" id="confirmPass" placeholder="Re-enter New Password">
+    </div>
+
+    <button onclick="saveProfile()">Save</button>
+  </div>
+
+  <div class="char-section">
+    <h3 style="text-align:center;">My Characters</h3>
+    <div id="userCharacters"></div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://ai-character-backend.onrender.com';
+    const params = new URLSearchParams(window.location.search);
+    const viewingUser = params.get("user");
+
+    let currentUser = null;
+    let profileUser = null;
+
+    async function init() {
+      const res = await fetch(`${API_BASE}/api/users/me`, { credentials: 'include' });
+      if (res.ok) currentUser = await res.json();
+
+      const target = viewingUser || (currentUser && currentUser.username);
+      if (!target) return window.location.href = "login.html";
+
+      const userRes = await fetch(`${API_BASE}/api/users/${target}`);
+      if (!userRes.ok) return alert("User not found.");
+      profileUser = await userRes.json();
+
+      const isOwner = currentUser && currentUser.username === profileUser.username;
+
+      document.getElementById("displayName").textContent = "@" + profileUser
