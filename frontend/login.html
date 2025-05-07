@@ -3,68 +3,138 @@
 <head>
   <title>Log In</title>
   <style>
-    /* Same styles as before */
+    body {
+      font-family: sans-serif;
+      background: #f2f2f2;
+      padding: 40px 20px;
+    }
+    .login-container {
+      max-width: 400px;
+      margin: auto;
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+    h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 14px;
+      text-align: left;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    p {
+      font-size: 14px;
+      margin-top: 14px;
+    }
+    .guest-message {
+      margin-top: 40px;
+      background: #fff;
+      padding: 16px;
+      border-radius: 10px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.05);
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
   </style>
 </head>
 <body>
 
   <div class="login-container">
-    <h2>LOG IN</h2>
-    <label>Username</label>
+    <h2><strong>LOGIN</strong></h2>
+
+    <label>Username:</label>
     <input type="text" id="username">
 
-    <label>Password</label>
+    <label>Password:</label>
     <input type="password" id="password">
 
     <button onclick="login()">Log In</button>
 
-    <p>If you don't have an account, <a href="signup.html">sign up here</a>. It is 100% free!</p>
+    <p>If you don't have an account, it is 100% free!</p>
+    <p>If you forgot your password, please message the Admin in the message box below and don't forget to put your Email.</p>
   </div>
 
-  <div class="guest-message" style="max-width:400px;margin:auto;">
-    <h3 style="margin-top:0;">Message Admin (No account required)</h3>
+  <div class="guest-message">
+    <h3 style="margin-top:0;">Message Admin</h3>
     <textarea id="guestMessage" rows="3" placeholder="Message me your @User and put your email, so I can send you a recovery password"></textarea>
     <input type="text" id="guestName" placeholder="Your name (or leave blank)">
     <button onclick="sendGuestMessage()">Send Message</button>
   </div>
 
   <script>
-  const API_BASE = 'https://ai-character-backend.onrender.com';
+    const API_BASE = 'https://ai-character-backend.onrender.com';
 
-  function login() {
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
+    async function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
 
-    fetch(`${API_BASE}/api/users/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ username, password })
-    })
-    .then(res => {
-      if (!res.ok) throw new Error("Login failed");
-      return res.json();
-    })
-    .then(() => window.location.href = "index.html")
-    .catch(() => alert("Incorrect username or password."));
-  }
+      if (!username || !password) {
+        alert("Fill in all fields.");
+        return;
+      }
 
-  function sendGuestMessage() {
-    const text = document.getElementById("guestMessage").value.trim();
-    const name = document.getElementById("guestName").value.trim() || "Guest";
-    if (!text) return alert("Please type a message.");
+      const res = await fetch(`${API_BASE}/api/users/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ username, password })
+      });
 
-    fetch(`${API_BASE}/api/admin/messages`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ from: name, text })
-    })
-    .then(() => {
+      if (res.ok) {
+        window.location.href = "index.html";
+      } else {
+        alert("Incorrect username or password.");
+      }
+    }
+
+    async function sendGuestMessage() {
+      const text = document.getElementById("guestMessage").value.trim();
+      const name = document.getElementById("guestName").value.trim() || "Guest";
+
+      if (!text) return alert("Please type a message.");
+
+      await fetch(`${API_BASE}/api/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ from: name, text })
+      });
+
       alert("Message sent to admin.");
       document.getElementById("guestMessage").value = "";
       document.getElementById("guestName").value = "";
-    });
-  }
+    }
   </script>
 
 </body>
