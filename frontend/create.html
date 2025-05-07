@@ -3,7 +3,56 @@
 <head>
   <title>Create a Character</title>
   <style>
-    /* same styles as before */
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+    }
+    .form-container {
+      max-width: 500px;
+      margin: 40px auto;
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 4px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .preview {
+      margin-top: 10px;
+      text-align: center;
+    }
+    .preview img {
+      width: 160px;
+      height: 160px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
   </style>
 </head>
 <body>
@@ -49,17 +98,17 @@
 
   <script>
     const API_BASE = 'https://ai-character-backend.onrender.com';
+    let currentUser = null;
 
-    // Check session
-    fetch(`${API_BASE}/api/users/me`, { credentials: 'include' })
-      .then(res => res.ok ? res.json() : Promise.reject())
-      .then(user => loggedUser = user)
-      .catch(() => {
+    async function init() {
+      const res = await fetch(`${API_BASE}/api/users/me`, { credentials: 'include' });
+      if (!res.ok) {
         alert("You must be logged in to create a character.");
         window.location.href = "login.html";
-      });
-
-    let loggedUser = null;
+        return;
+      }
+      currentUser = await res.json();
+    }
 
     const imageFileInput = document.getElementById("charImageFile");
     const imageURLInput = document.getElementById("charImageURL");
@@ -96,33 +145,32 @@
         return;
       }
 
-      const character = {
+      const payload = {
         name,
         sex,
         tags,
         sfw,
         description: desc,
         starter,
-        image: imageURL,
-        createdBy: loggedUser.username
+        image: imageURL
       };
 
-      try {
-        const res = await fetch(`${API_BASE}/api/characters`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(character)
-        });
+      const res = await fetch(`${API_BASE}/api/characters`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload)
+      });
 
-        if (!res.ok) throw new Error("Failed to create character");
-
+      if (res.ok) {
         alert("Character created!");
         window.location.href = "index.html";
-      } catch (err) {
-        console.error(err);
-        alert("Failed to create character.");
+      } else {
+        alert("Something went wrong.");
       }
     }
+
+    init();
   </script>
 </body>
 </html>
