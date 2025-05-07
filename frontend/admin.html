@@ -3,17 +3,82 @@
 <head>
   <title>Admin Panel</title>
   <style>
-    /* same styles as before */
+    body {
+      font-family: sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+    h2 {
+      margin-top: 40px;
+    }
+    .user-card, .chat-box {
+      background: white;
+      padding: 16px;
+      margin: 10px 0;
+      border-radius: 10px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.05);
+    }
+    .user-card img {
+      width: 60px;
+      height: 60px;
+      border-radius: 100%;
+      object-fit: cover;
+      border: 2px solid #ccc;
+      margin-right: 12px;
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+    }
+    .user-info div {
+      flex-grow: 1;
+    }
+    .reset {
+      margin-top: 8px;
+    }
+    .reset input {
+      padding: 6px;
+      width: 200px;
+      margin-right: 8px;
+    }
+    .reset button {
+      padding: 6px 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .delete-btn {
+      background: #dc3545;
+    }
+    .chat-box pre {
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 8px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+    button.clear-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
+
   <h1>Admin Panel</h1>
 
   <h2>All Users</h2>
   <div id="userList"></div>
 
   <h2>All Conversations</h2>
-  <button class="clear-btn" onclick="clearRecentChats()">Remove All Recent Chats</button>
+  <button class="clear-btn" onclick="clearRecentChats()">Clear From View</button>
   <div id="chatList"></div>
 
   <h2>Messages from Users</h2>
@@ -23,34 +88,20 @@
   <script>
     const API_BASE = 'https://ai-character-backend.onrender.com';
 
-    // Check admin access
-    fetch(`${API_BASE}/api/users/me`, { credentials: 'include' })
-      .then(res => res.ok ? res.json() : Promise.reject())
-      .then(user => {
-        if (user.username !== "TazDaz") {
-          alert("Access denied.");
-          window.location.href = "index.html";
-        } else {
-          loadAdminData();
-        }
-      })
-      .catch(() => {
+    async function init() {
+      const current = await fetch(`${API_BASE}/api/users/me`, { credentials: 'include' });
+      const currentUser = await current.json();
+      if (!currentUser || currentUser.username !== "TazDaz") {
         alert("Access denied.");
         window.location.href = "index.html";
-      });
+        return;
+      }
 
-    async function loadAdminData() {
-      await Promise.all([
-        loadUsers(),
-        loadChats(),
-        loadMessages()
-      ]);
-    }
-
-    async function loadUsers() {
-      const res = await fetch(`${API_BASE}/api/users`, { credentials: 'include' });
-      const users = await res.json();
+      // Load all users
+      const usersRes = await fetch(`${API_BASE}/api/users`);
+      const users = await usersRes.json();
       const userList = document.getElementById("userList");
+
       users.forEach(user => {
         const div = document.createElement("div");
         div.className = "user-card";
@@ -71,35 +122,27 @@
         `;
         userList.appendChild(div);
       });
-    }
 
-    async function resetPassword(username) {
-      const newPass = document.getElementById("reset-" + username).value.trim();
-      if (!newPass) return alert("Enter a password.");
-      await fetch(`${API_BASE}/api/users/reset-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ username, newPassword: newPass })
-      });
-      alert(`Password for ${username} updated!`);
-    }
+      // Load messages
+      const msgRes = await fetch(`${API_BASE}/api/admin/messages`);
+      const messages = await msgRes.json();
+      const messageList = document.getElementById("messageList");
+      if (!messages.length) {
+        messageList.innerHTML = "<p>No messages.</p>";
+      } else {
+        messages.forEach(m => {
+          const div = document.createElement("div");
+          div.className = "user-card";
+          div.innerHTML = `<strong>@${m.from}</strong> <em>${m.date}</em><br>${m.text}`;
+          messageList.appendChild(div);
+        });
+      }
 
-    async function deleteUser(username) {
-      if (!confirm(`Delete @${username} and all their data?`)) return;
-      await fetch(`${API_BASE}/api/users/${username}`, {
-        method: "DELETE",
-        credentials: "include"
-      });
-      alert(`@${username} has been deleted.`);
-      location.reload();
-    }
-
-    async function loadChats() {
-      const res = await fetch(`${API_BASE}/api/admin/chat`, { credentials: 'include' });
-      const allChats = await res.json();
+      // Load chats
+      const chatRes = await fetch(`${API_BASE}/api/admin/chat`);
+      const chats = await chatRes.json();
       const chatList = document.getElementById("chatList");
-      allChats.forEach(chat => {
+      chats.forEach(chat => {
         const div = document.createElement("div");
         div.className = "chat-box";
         div.innerHTML = `
@@ -110,36 +153,41 @@
       });
     }
 
-    async function clearRecentChats() {
-      if (!confirm("Clear chat list from admin view?")) return;
-      document.getElementById("chatList").innerHTML = "<p>Chat list cleared from view.</p>";
+    async function resetPassword(username) {
+      const input = document.getElementById("reset-" + username);
+      const newPass = input.value.trim();
+      if (!newPass) return alert("Enter a password.");
+
+      await fetch(`${API_BASE}/api/users/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, newPassword: newPass })
+      });
+
+      alert(`Password for @${username} reset!`);
+      input.value = "";
     }
 
-    async function loadMessages() {
-      const res = await fetch(`${API_BASE}/api/admin/messages`, { credentials: 'include' });
-      const messages = await res.json();
-      const messageList = document.getElementById("messageList");
-      if (messages.length === 0) {
-        messageList.innerHTML = "<p>No messages.</p>";
-        return;
-      }
-      messages.forEach(m => {
-        const div = document.createElement("div");
-        div.className = "user-card";
-        div.innerHTML = `<strong>@${m.from}</strong> <em>${m.date}</em><br>${m.text}`;
-        messageList.appendChild(div);
-      });
+    async function deleteUser(username) {
+      if (!confirm(`Delete @${username} and all data?`)) return;
+      await fetch(`${API_BASE}/api/users/${username}`, { method: "DELETE" });
+      alert(`@${username} deleted.`);
+      location.reload();
     }
 
     async function deleteAllMessages() {
-      if (!confirm("Delete all messages?")) return;
-      await fetch(`${API_BASE}/api/admin/messages`, {
-        method: "DELETE",
-        credentials: "include"
-      });
+      if (!confirm("Delete all guest messages?")) return;
+      await fetch(`${API_BASE}/api/admin/messages`, { method: "DELETE" });
       document.getElementById("messageList").innerHTML = "<p>No messages.</p>";
       alert("All messages deleted.");
     }
+
+    function clearRecentChats() {
+      document.getElementById("chatList").innerHTML = "<p>Chat list cleared from view.</p>";
+    }
+
+    init();
   </script>
+
 </body>
 </html>
