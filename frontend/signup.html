@@ -1,67 +1,165 @@
-<script>
-  const API_BASE = 'https://ai-character-backend.onrender.com';
-
-  const profilePicURL = document.getElementById("profilePic");
-  const profilePicFile = document.getElementById("profilePicFile");
-  const preview = document.getElementById("picPreview");
-
-  profilePicURL.addEventListener("input", () => {
-    if (profilePicURL.value) {
-      preview.src = profilePicURL.value;
-      profilePicFile.value = "";
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sign Up</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f9f9f9;
+      padding: 20px;
     }
-  });
-
-  profilePicFile.addEventListener("change", () => {
-    const file = profilePicFile.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = e => preview.src = e.target.result;
-      reader.readAsDataURL(file);
-      profilePicURL.value = "";
+    .signup-container {
+      max-width: 400px;
+      margin: 80px auto;
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      text-align: center;
     }
-  });
-
-  function handleSignup() {
-    const nickname = document.getElementById("nickname").value.trim();
-    const sex = document.getElementById("sex").value;
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value;
-    const confirmPassword = document.getElementById("confirmPassword").value;
-    const profilePic = preview.src;
-
-    if (!nickname || !username || !password || !confirmPassword) {
-      alert("Please fill in all fields.");
-      return;
+    h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
     }
-
-    if (password !== confirmPassword) {
-      alert("Your passwords don't match, Uce. Try again.");
-      return;
+    label {
+      text-align: left;
+      display: block;
+      margin-top: 12px;
+      font-weight: 600;
     }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 4px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    .preview {
+      margin-top: 10px;
+    }
+    .preview img {
+      width: 160px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid #ccc;
+    }
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 10px;
+      font-size: 14px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="signup-container">
+    <h2><strong>SIGN UP</strong></h2>
 
-    fetch(`${API_BASE}/api/users/signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        nickname,
-        sex,
-        username,
-        password,
-        profilePic
-      })
-    })
-    .then(res => {
-      if (!res.ok) throw new Error("Signup failed");
-      return res.json();
-    })
-    .then(() => {
-      alert("Account created! You’re now signed in.");
-      window.location.href = "index.html";
-    })
-    .catch(err => {
-      alert("That username is already taken, Uce.");
+    <label for="nickname">NICKNAME:</label>
+    <input type="text" id="nickname" />
+
+    <label for="sex">SEX:</label>
+    <select id="sex">
+      <option>Male</option>
+      <option>Female</option>
+      <option>Nonbinary</option>
+      <option>N/A</option>
+    </select>
+
+    <label for="profilePic">PROFILE PICTURE (URL or Upload):</label>
+    <input type="text" id="profilePic" placeholder="https://example.com/image.jpg" />
+    <input type="file" id="profilePicFile" accept="image/*" />
+
+    <div class="preview">
+      <img id="picPreview" src="https://via.placeholder.com/160?text=Preview" />
+    </div>
+
+    <label for="username">CREATE A USERNAME:</label>
+    <input type="text" id="username" />
+
+    <label for="password">PASSWORD:</label>
+    <input type="password" id="password" />
+
+    <label for="confirmPassword">RE-ENTER PASSWORD:</label>
+    <input type="password" id="confirmPassword" />
+
+    <button onclick="handleSignup()">COMPLETE</button>
+  </div>
+
+  <script>
+    const API_BASE = 'https://ai-character-backend.onrender.com';
+
+    const profilePicURL = document.getElementById("profilePic");
+    const profilePicFile = document.getElementById("profilePicFile");
+    const preview = document.getElementById("picPreview");
+
+    profilePicURL.addEventListener("input", () => {
+      if (profilePicURL.value) {
+        preview.src = profilePicURL.value;
+        profilePicFile.value = "";
+      }
     });
-  }
-</script>
+
+    profilePicFile.addEventListener("change", () => {
+      const file = profilePicFile.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = e => preview.src = e.target.result;
+        reader.readAsDataURL(file);
+        profilePicURL.value = "";
+      }
+    });
+
+    async function handleSignup() {
+      const nickname = document.getElementById("nickname").value.trim();
+      const sex = document.getElementById("sex").value;
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+      const profilePic = preview.src;
+
+      if (!nickname || !username || !password || !confirmPassword) {
+        alert("Please fill in all fields.");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        alert("Your passwords don't match, Uce. Try again.");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/users/signup`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            nickname,
+            sex,
+            username,
+            password,
+            profilePic
+          })
+        });
+
+        if (res.ok) {
+          alert("Account created! You’re now signed in.");
+          window.location.href = "index.html";
+        } else {
+          const data = await res.json();
+          alert(data.message || "Signup failed.");
+        }
+      } catch (err) {
+        alert("Something went wrong. Try again.");
+      }
+    }
+  </script>
+</body>
+</html>
