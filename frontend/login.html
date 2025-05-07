@@ -29,54 +29,42 @@
   </div>
 
   <script>
-    const API_BASE = 'https://ai-character-backend.onrender.com';
+  const API_BASE = 'https://ai-character-backend.onrender.com';
 
-    async function login() {
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
+  function login() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-      if (!username || !password) {
-        return alert("Please fill in both fields.");
-      }
+    fetch(`${API_BASE}/api/users/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ username, password })
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("Login failed");
+      return res.json();
+    })
+    .then(() => window.location.href = "index.html")
+    .catch(() => alert("Incorrect username or password."));
+  }
 
-      const res = await fetch(`${API_BASE}/api/users/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ username, password })
-      });
+  function sendGuestMessage() {
+    const text = document.getElementById("guestMessage").value.trim();
+    const name = document.getElementById("guestName").value.trim() || "Guest";
+    if (!text) return alert("Please type a message.");
 
-      if (res.ok) {
-        alert("Logged in successfully!");
-        window.location.href = "index.html";
-      } else {
-        alert("Incorrect username or password.");
-      }
-    }
-
-    async function sendGuestMessage() {
-      const text = document.getElementById("guestMessage").value.trim();
-      const name = document.getElementById("guestName").value.trim() || "Guest";
-
-      if (!text) return alert("Please type a message.");
-
-      const res = await fetch(`${API_BASE}/api/admin/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          from: name,
-          text
-        })
-      });
-
-      if (res.ok) {
-        alert("Message sent to admin.");
-        document.getElementById("guestMessage").value = "";
-        document.getElementById("guestName").value = "";
-      } else {
-        alert("Failed to send message.");
-      }
-    }
+    fetch(`${API_BASE}/api/admin/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ from: name, text })
+    })
+    .then(() => {
+      alert("Message sent to admin.");
+      document.getElementById("guestMessage").value = "";
+      document.getElementById("guestName").value = "";
+    });
+  }
   </script>
 
 </body>
