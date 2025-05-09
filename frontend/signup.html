@@ -126,7 +126,13 @@
           body: JSON.stringify(userData)
         });
 
-        const data = await res.json();
+        let data;
+        try {
+          data = await res.json();
+        } catch (err) {
+          throw new Error('Server did not return valid JSON');
+        }
+
         if (res.ok) {
           window.location.href = 'index.html';
         } else {
