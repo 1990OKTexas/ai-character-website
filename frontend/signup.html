@@ -17,7 +17,7 @@
       border-radius: 10px;
       box-shadow: 0 0 8px rgba(0,0,0,0.1);
     }
-    input {
+    input, button {
       display: block;
       margin: 10px 0;
       padding: 10px;
@@ -29,13 +29,17 @@
       background-color: #007bff;
       color: white;
       border: none;
-      padding: 10px;
-      width: 100%;
-      border-radius: 6px;
       cursor: pointer;
     }
     button:hover {
       background-color: #0056b3;
+    }
+    img {
+      display: block;
+      margin: 10px auto;
+      border-radius: 10px;
+      max-width: 160px;
+      max-height: 160px;
     }
   </style>
 </head>
@@ -46,12 +50,47 @@
       <input type="text" id="username" placeholder="Username" required />
       <input type="text" id="nickname" placeholder="Nickname (optional)" />
       <input type="password" id="password" placeholder="Password" required />
+
+      <label>Upload profile picture:</label>
+      <input type="file" id="profilePicFile" accept="image/*" />
+
+      <label>Or enter image URL:</label>
+      <input type="text" id="profilePicURL" placeholder="https://example.com/image.png" />
+
+      <img id="preview" src="" alt="Preview" style="display:none;" />
+
       <button type="submit">Sign Up</button>
     </form>
-    <p>Already have an account? <a href="login.html" style="color:#007bff; text-decoration:underline;">Log in here.</a></p>
+    <p>Already have an account? 
+      <a href="login.html" style="color:#007bff; text-decoration:underline;">Log in here.</a>
+    </p>
   </div>
 
   <script>
+    const fileInput = document.getElementById('profilePicFile');
+    const urlInput = document.getElementById('profilePicURL');
+    const preview = document.getElementById('preview');
+
+    function updatePreview(src) {
+      preview.src = src;
+      preview.style.display = 'block';
+    }
+
+    // When uploading a file
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => updatePreview(reader.result);
+      reader.readAsDataURL(file);
+    });
+
+    // When typing a URL
+    urlInput.addEventListener('input', () => {
+      if (!fileInput.files[0]) updatePreview(urlInput.value);
+    });
+
     document.getElementById('signup-form').addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -59,15 +98,30 @@
       const nickname = document.getElementById('nickname').value;
       const password = document.getElementById('password').value;
 
+      let profilePicture = '';
+
+      if (fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = async () => {
+          profilePicture = reader.result;
+          await sendSignup(username, nickname, password, profilePicture);
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        profilePicture = urlInput.value;
+        await sendSignup(username, nickname, password, profilePicture);
+      }
+    });
+
+    async function sendSignup(username, nickname, password, profilePicture) {
       try {
-        const res = await fetch('https://ai-character-backend.onrender.com/api/users/signup', {
+        const res = await fetch('https://your-backend-url.onrender.com/api/users/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, nickname, password })
+          body: JSON.stringify({ username, nickname, password, profilePicture })
         });
 
         const data = await res.json();
-
         if (res.ok) {
           alert('Signup successful!');
           window.location.href = 'login.html';
@@ -75,9 +129,9 @@
           alert(data.message || 'Signup failed');
         }
       } catch (err) {
-        alert('Error connecting to the server');
+        alert('Error connecting to server');
       }
-    });
+    }
   </script>
 </body>
 </html>
