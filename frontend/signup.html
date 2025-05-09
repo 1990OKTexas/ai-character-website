@@ -41,11 +41,6 @@
       max-width: 160px;
       max-height: 160px;
     }
-    pre#debugLog {
-      color: red;
-      font-size: 12px;
-      margin-top: 10px;
-    }
   </style>
 </head>
 <body>
@@ -69,14 +64,12 @@
     <p>Already have an account? 
       <a href="login.html" style="color:#007bff; text-decoration:underline;">Log in here.</a>
     </p>
-    <pre id="debugLog"></pre>
   </div>
 
   <script>
     const fileInput = document.getElementById('profilePicFile');
     const urlInput = document.getElementById('profilePicURL');
     const preview = document.getElementById('preview');
-    const debugLog = document.getElementById('debugLog');
 
     function updatePreview(src) {
       preview.src = src;
@@ -126,22 +119,15 @@
           body: JSON.stringify(userData)
         });
 
-        let data;
-        try {
-          data = await res.json();
-        } catch (err) {
-          throw new Error('Server did not return valid JSON');
-        }
-
+        const data = await res.json();
         if (res.ok) {
           window.location.href = 'index.html';
         } else {
           alert(data.message || 'Signup failed');
-          debugLog.innerText = JSON.stringify(data, null, 2);
         }
       } catch (err) {
-        alert('Error connecting to server');
-        debugLog.innerText = err.toString();
+        alert('Client error: ' + err.message);
+        console.error(err);
       }
     }
   </script>
