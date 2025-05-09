@@ -1,176 +1,111 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Create a Character</title>
   <style>
     body {
       font-family: sans-serif;
-      background: #f9f9f9;
+      background-color: #f2f2f2;
       padding: 20px;
     }
-    .form-container {
-      max-width: 500px;
-      margin: 40px auto;
+    .container {
       background: white;
-      padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 20px;
+      max-width: 500px;
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
     }
-    h2 {
-      text-align: center;
-    }
-    label {
+    input, select, textarea, button {
       display: block;
-      margin-top: 12px;
-      font-weight: bold;
-    }
-    input, textarea, select {
-      width: 100%;
+      margin: 10px 0;
       padding: 10px;
-      margin-top: 4px;
-      font-size: 14px;
+      width: 100%;
       border-radius: 6px;
       border: 1px solid #ccc;
     }
     button {
-      margin-top: 20px;
-      width: 100%;
-      padding: 10px;
-      font-size: 14px;
-      background: #007bff;
+      background-color: #007bff;
       color: white;
       border: none;
-      border-radius: 6px;
       cursor: pointer;
     }
-    .preview {
-      margin-top: 10px;
-      text-align: center;
-    }
-    .preview img {
-      width: 160px;
-      height: 160px;
-      border-radius: 8px;
-      object-fit: cover;
+    button:hover {
+      background-color: #0056b3;
     }
   </style>
 </head>
 <body>
-
-  <div class="form-container">
+  <div class="container">
     <h2>Create a Character</h2>
-
-    <label>Character's Name:</label>
-    <input type="text" id="charName" />
-
-    <label>Sex:</label>
-    <select id="charSex">
-      <option>Male</option>
-      <option>Female</option>
-      <option>Nonbinary</option>
-      <option>N/A</option>
-    </select>
-
-    <label>Personalities (use hashtags):</label>
-    <input type="text" id="charTags" placeholder="#fun #friendly #chaotic" />
-
-    <label>SFW or NSFW:</label>
-    <select id="charSFW">
-      <option>SFW</option>
-      <option>NSFW</option>
-    </select>
-
-    <label>Description:</label>
-    <textarea id="charDesc" rows="3"></textarea>
-
-    <label>Starter Message:</label>
-    <textarea id="charStarter" rows="2"></textarea>
-
-    <label>Upload Image (URL or File):</label>
-    <input type="text" id="charImageURL" placeholder="https://example.com/image.jpg" />
-    <input type="file" id="charImageFile" accept="image/*" />
-    <div class="preview">
-      <img id="imagePreview" src="https://via.placeholder.com/160?text=Preview" />
-    </div>
-
-    <button onclick="createCharacter()">Create Character</button>
-  </div>
-
-  <script>
+    <form id="character-form">
+      <input type="text" id="name" placeholder="Character's Name" required />
+      <select id="sex">
+        <option>Male</option>
+        <option>Female</option>
+        <option>Non-binary</option>
+        <option>N/A</option>
+      </select>
+      <input type="text" id="personality" placeholder="Personalities (use hashtags)" />
+      <select id="sfw">
+        <option>SFW</option>
+        <option>NSFW</option>
+      </select>
+      <textarea id="description" placeholder="Description" rows="3"></textarea>
+      <textarea id="starter" placeholder="Starter Message" rows="3"></textarea>
+      <input type="text" id="image" placeholder="Image URL" required />
+      <button type="submit">Create</button>
+    </form>
+  </div>  <script>
     const API_BASE = 'https://ai-character-backend.onrender.com';
-    let currentUser = null;
 
-    async function init() {
-      const res = await fetch(`${API_BASE}/api/users/me`, { credentials: 'include' });
+    // Check session
+    async function checkLoggedIn() {
+      const res = await fetch(`${API_BASE}/api/users/me`, {
+        credentials: 'include'
+      });
       if (!res.ok) {
-        alert("You must be logged in to create a character.");
-        window.location.href = "login.html";
-        return;
+        alert('You must be logged in to create a character.');
+        window.location.href = 'login.html';
       }
-      currentUser = await res.json();
     }
 
-    const imageFileInput = document.getElementById("charImageFile");
-    const imageURLInput = document.getElementById("charImageURL");
-    const imagePreview = document.getElementById("imagePreview");
+    document.getElementById('character-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-    imageFileInput.addEventListener("change", () => {
-      const file = imageFileInput.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = e => imagePreview.src = e.target.result;
-        reader.readAsDataURL(file);
-        imageURLInput.value = "";
-      }
-    });
-
-    imageURLInput.addEventListener("input", () => {
-      if (imageURLInput.value) {
-        imagePreview.src = imageURLInput.value;
-        imageFileInput.value = "";
-      }
-    });
-
-    async function createCharacter() {
-      const name = document.getElementById("charName").value.trim();
-      const sex = document.getElementById("charSex").value;
-      const tags = document.getElementById("charTags").value.trim();
-      const sfw = document.getElementById("charSFW").value;
-      const desc = document.getElementById("charDesc").value.trim();
-      const starter = document.getElementById("charStarter").value.trim();
-      const imageURL = imagePreview.src;
-
-      if (!name || !tags || !desc || !starter) {
-        alert("Please fill in all required fields.");
-        return;
-      }
-
-      const payload = {
-        name,
-        sex,
-        tags,
-        sfw,
-        description: desc,
-        starter,
-        image: imageURL
+      const data = {
+        name: document.getElementById('name').value,
+        sex: document.getElementById('sex').value,
+        personality: document.getElementById('personality').value,
+        nsfw: document.getElementById('sfw').value,
+        description: document.getElementById('description').value,
+        starter: document.getElementById('starter').value,
+        image: document.getElementById('image').value
       };
 
-      const res = await fetch(`${API_BASE}/api/characters`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload)
-      });
+      try {
+        const res = await fetch(`${API_BASE}/api/characters`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify(data)
+        });
 
-      if (res.ok) {
-        alert("Character created!");
-        window.location.href = "index.html";
-      } else {
-        alert("Something went wrong.");
+        const result = await res.json();
+
+        if (res.ok) {
+          alert('Character created!');
+          window.location.href = 'index.html';
+        } else {
+          alert(result.message || 'Failed to create character');
+        }
+      } catch (err) {
+        alert('Client error: ' + err.message);
       }
-    }
+    });
 
-    init();
-  </script>
-</body>
+    checkLoggedIn();
+  </script></body>
 </html>
