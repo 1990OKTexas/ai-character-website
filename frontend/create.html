@@ -1,6 +1,7 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Create a Character</title>
   <style>
     body {
@@ -11,12 +12,12 @@
     .container {
       background: white;
       padding: 20px;
-      max-width: 500px;
+      max-width: 400px;
       margin: auto;
       border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
     }
-    input, select, textarea, button {
+    input, textarea, select, button {
       display: block;
       margin: 10px 0;
       padding: 10px;
@@ -46,66 +47,76 @@
         <option>Non-binary</option>
         <option>N/A</option>
       </select>
-      <input type="text" id="personality" placeholder="Personalities (use hashtags)" />
+      <input type="text" id="hashtags" placeholder="Personalities (use hashtags)" required />
       <select id="sfw">
         <option>SFW</option>
         <option>NSFW</option>
       </select>
-      <textarea id="description" placeholder="Description" rows="3"></textarea>
-      <textarea id="starter" placeholder="Starter Message" rows="3"></textarea>
+      <textarea id="description" placeholder="Description" required></textarea>
+      <textarea id="starter" placeholder="Starter Message" required></textarea>
       <input type="text" id="image" placeholder="Image URL" required />
       <button type="submit">Create</button>
     </form>
-  </div>  <script>
+  </div>
+
+  <script>
     const API_BASE = 'https://ai-character-backend.onrender.com';
 
-    // Check session
-    async function checkLoggedIn() {
-      const res = await fetch(`${API_BASE}/api/users/me`, {
-        credentials: 'include'
-      });
-      if (!res.ok) {
-        alert('You must be logged in to create a character.');
+    // DEBUG SESSION CHECK
+    fetch(`${API_BASE}/api/users/me`, { credentials: 'include' })
+      .then(res => {
+        if (!res.ok) throw new Error('Not logged in');
+        return res.json();
+      })
+      .then(data => {
+        console.log("Logged in as:", data.username);
+        // Optionally update the UI with their name
+      })
+      .catch(err => {
+        alert("You must be logged in to create a character.");
         window.location.href = 'login.html';
-      }
-    }
+      });
 
     document.getElementById('character-form').addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const data = {
-        name: document.getElementById('name').value,
-        sex: document.getElementById('sex').value,
-        personality: document.getElementById('personality').value,
-        nsfw: document.getElementById('sfw').value,
-        description: document.getElementById('description').value,
-        starter: document.getElementById('starter').value,
-        image: document.getElementById('image').value
+      const name = document.getElementById('name').value;
+      const sex = document.getElementById('sex').value;
+      const hashtags = document.getElementById('hashtags').value;
+      const sfw = document.getElementById('sfw').value;
+      const description = document.getElementById('description').value;
+      const starter = document.getElementById('starter').value;
+      const image = document.getElementById('image').value;
+
+      const character = {
+        name,
+        sex,
+        hashtags,
+        sfw,
+        description,
+        starter,
+        image
       };
 
       try {
         const res = await fetch(`${API_BASE}/api/characters`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify(data)
+          body: JSON.stringify(character)
         });
 
-        const result = await res.json();
-
+        const data = await res.json();
         if (res.ok) {
           alert('Character created!');
           window.location.href = 'index.html';
         } else {
-          alert(result.message || 'Failed to create character');
+          alert(data.message || 'Error creating character.');
         }
       } catch (err) {
         alert('Client error: ' + err.message);
       }
     });
-
-    checkLoggedIn();
-  </script></body>
+  </script>
+</body>
 </html>
