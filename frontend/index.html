@@ -99,14 +99,19 @@
     const API_BASE = 'https://ai-character-backend.onrender.com';
 
     async function checkUser() {
-      const res = await fetch(`${API_BASE}/api/users/me`, { credentials: "include" });
-      if (res.ok) {
-        const user = await res.json();
-        document.getElementById("profileBtn").style.display = "inline-block";
-        document.getElementById("signOutBtn").style.display = "inline-block";
-        document.getElementById("welcome").style.display = "block";
-        document.getElementById("welcome").innerText = `Welcome, ${user.nickname || user.username}!`;
-      } else {
+      try {
+        const res = await fetch(`${API_BASE}/api/users/me`, { credentials: "include" });
+        if (res.ok) {
+          const user = await res.json();
+          document.getElementById("profileBtn").style.display = "inline-block";
+          document.getElementById("signOutBtn").style.display = "inline-block";
+          document.getElementById("welcome").style.display = "block";
+          document.getElementById("welcome").innerText = `Welcome, ${user.nickname || user.username}!`;
+        } else {
+          document.getElementById("signInBtn").style.display = "inline-block";
+        }
+      } catch (err) {
+        // If something goes wrong (like CORS), still show sign-in button
         document.getElementById("signInBtn").style.display = "inline-block";
       }
     }
