@@ -60,7 +60,7 @@
       const password = document.getElementById('password').value;
 
       try {
-        const res = await fetch('https://ai-character-backend.onrender.com/api/users/signup', {
+        const res = await fetch('https://ai-character-backend.onrender.com/api/user/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, nickname, password })
