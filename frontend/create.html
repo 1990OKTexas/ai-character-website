@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Create a Character</title>
+  <meta charset="UTF-8">
+  <title>Create Character</title>
   <style>
     body {
       font-family: sans-serif;
-      background-color: #f2f2f2;
+      background-color: #e9e9e9;
       padding: 20px;
     }
     .container {
       background: white;
       padding: 20px;
-      max-width: 400px;
+      max-width: 500px;
       margin: auto;
       border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     input, textarea, select, button {
       display: block;
@@ -26,92 +26,86 @@
       border: 1px solid #ccc;
     }
     button {
-      background-color: #007bff;
+      background-color: #28a745;
       color: white;
       border: none;
       cursor: pointer;
     }
     button:hover {
-      background-color: #0056b3;
+      background-color: #218838;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Create a Character</h2>
-    <form id="character-form">
-      <input type="text" id="name" placeholder="Character's Name" required />
-      <select id="sex">
-        <option>Male</option>
-        <option>Female</option>
-        <option>Non-binary</option>
-        <option>N/A</option>
+    <h2>Create a New Character</h2>
+    <form id="create-form">
+      <label>Name:</label>
+      <input type="text" id="name" required />
+
+      <label>Gender:</label>
+      <select id="gender" required>
+        <option value="">Select</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Non-binary">Non-binary</option>
+        <option value="N/A">N/A</option>
       </select>
-      <input type="text" id="hashtags" placeholder="Personalities (use hashtags)" required />
-      <select id="sfw">
-        <option>SFW</option>
-        <option>NSFW</option>
-      </select>
-      <textarea id="description" placeholder="Description" required></textarea>
-      <textarea id="starter" placeholder="Starter Message" required></textarea>
-      <input type="text" id="image" placeholder="Image URL" required />
-      <button type="submit">Create</button>
+
+      <label>Image URL:</label>
+      <input type="text" id="image" required />
+
+      <label>Description:</label>
+      <textarea id="description" rows="3" required></textarea>
+
+      <label>Hashtags (comma-separated):</label>
+      <input type="text" id="hashtags" required />
+
+      <label>Starter Message:</label>
+      <textarea id="starter" rows="3" required></textarea>
+
+      <button type="submit">Create Character</button>
     </form>
   </div>
 
   <script>
     const API_BASE = 'https://ai-character-backend.onrender.com';
+    const token = localStorage.getItem('token');
 
-    // DEBUG SESSION CHECK
-    fetch(`${API_BASE}/api/users/me`, { credentials: 'include' })
-      .then(res => {
-        if (!res.ok) throw new Error('Not logged in');
-        return res.json();
-      })
-      .then(data => {
-        console.log("Logged in as:", data.username);
-        // Optionally update the UI with their name
-      })
-      .catch(err => {
-        alert("You must be logged in to create a character.");
-        window.location.href = 'login.html';
-      });
+    if (!token) {
+      alert('You must be logged in to create a character.');
+      window.location.href = 'login.html';
+    }
 
-    document.getElementById('character-form').addEventListener('submit', async (e) => {
+    document.getElementById('create-form').addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const name = document.getElementById('name').value;
-      const sex = document.getElementById('sex').value;
-      const hashtags = document.getElementById('hashtags').value;
-      const sfw = document.getElementById('sfw').value;
-      const description = document.getElementById('description').value;
-      const starter = document.getElementById('starter').value;
-      const image = document.getElementById('image').value;
-
-      const character = {
-        name,
-        sex,
-        hashtags,
-        sfw,
-        description,
-        starter,
-        image
+      const characterData = {
+        name: document.getElementById('name').value,
+        gender: document.getElementById('gender').value,
+        imageUrl: document.getElementById('image').value,
+        description: document.getElementById('description').value,
+        hashtags: document.getElementById('hashtags').value,
+        starter: document.getElementById('starter').value
       };
 
       try {
         const res = await fetch(`${API_BASE}/api/characters`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify(character)
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(characterData)
         });
 
         const data = await res.json();
+
         if (res.ok) {
-          alert('Character created!');
-          window.location.href = 'index.html';
+          alert('Character created successfully!');
+          window.location.href = 'index.html'; // or wherever you want
         } else {
-          alert(data.message || 'Error creating character.');
+          alert(data.message || 'Failed to create character.');
         }
       } catch (err) {
         alert('Client error: ' + err.message);
